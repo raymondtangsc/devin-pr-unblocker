@@ -1,0 +1,398 @@
+[
+  {
+    "number": 22604,
+    "title": "feat(chart): Add a configuration item to configure links for table",
+    "user": {
+      "login": "rusackas"
+    },
+    "created_at": "2023-01-06T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-22604"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/22604"
+  },
+  {
+    "number": 24444,
+    "title": "feat: add distance unit",
+    "user": {
+      "login": "Aitema-gmbh"
+    },
+    "created_at": "2023-06-20T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-24444"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/24444"
+  },
+  {
+    "number": 24949,
+    "title": "fix(opensearch): fix opensearch time conversion",
+    "user": {
+      "login": "hainenber"
+    },
+    "created_at": "2023-08-11T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "clean",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-24949"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/24949"
+  },
+  {
+    "number": 26230,
+    "title": "fix(Calendar Heatmap): Add Back chart options for Calendar Heatmap",
+    "user": {
+      "login": "mikebridge"
+    },
+    "created_at": "2023-12-12T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "clean",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-26230"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/26230"
+  },
+  {
+    "number": 27779,
+    "title": "chore: Fix/remove hardcode of admin role",
+    "user": {
+      "login": "sha174n"
+    },
+    "created_at": "2024-03-30T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-27779"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/27779"
+  },
+  {
+    "number": 28171,
+    "title": "feat(a11y): enable ECharts aria-label",
+    "user": {
+      "login": "massucattoj"
+    },
+    "created_at": "2024-04-23T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "clean",
+    "draft": true,
+    "head": {
+      "ref": "contrib/pr-28171"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/28171"
+  },
+  {
+    "number": 28627,
+    "title": "fix(engine): update databend engine spec for dialect version >=0.4.6",
+    "user": {
+      "login": "hainenber"
+    },
+    "created_at": "2024-05-22T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-28627"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/28627"
+  },
+  {
+    "number": 29503,
+    "title": "fix: update Michigan polygon",
+    "user": {
+      "login": "mikebridge"
+    },
+    "created_at": "2024-07-06T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-29503"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/29503"
+  },
+  {
+    "number": 31981,
+    "title": "chore(i8n:spanish): complete-spanish-translations",
+    "user": {
+      "login": "Aitema-gmbh"
+    },
+    "created_at": "2025-01-25T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-31981"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/31981"
+  },
+  {
+    "number": 32487,
+    "title": "feat(gunicorn): statsd support",
+    "user": {
+      "login": "aminghadersohi"
+    },
+    "created_at": "2025-03-05T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-32487"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/32487"
+  },
+  {
+    "number": 32692,
+    "title": "feat(superset-frontend): Migrate from npm to pnpm",
+    "user": {
+      "login": "rusackas"
+    },
+    "created_at": "2025-03-19T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": true,
+    "head": {
+      "ref": "contrib/pr-32692"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/32692"
+  },
+  {
+    "number": 32833,
+    "title": "chore(translations): Portuguese translation update",
+    "user": {
+      "login": "massucattoj"
+    },
+    "created_at": "2025-04-05T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-32833"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/32833"
+  },
+  {
+    "number": 32958,
+    "title": "feat(dashboard): expand all chart descriptions",
+    "user": {
+      "login": "sha174n"
+    },
+    "created_at": "2025-04-17T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-32958"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/32958"
+  },
+  {
+    "number": 33002,
+    "title": "feat: add bulk certify functionality to charts and dashboards",
+    "user": {
+      "login": "eschutho"
+    },
+    "created_at": "2025-04-24T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-33002"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/33002"
+  },
+  {
+    "number": 33424,
+    "title": "feat(Embedding): Embeddable Charts as per SIP",
+    "user": {
+      "login": "aminghadersohi"
+    },
+    "created_at": "2025-05-29T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": true,
+    "head": {
+      "ref": "contrib/pr-33424"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/33424"
+  },
+  {
+    "number": 33562,
+    "title": "feat(maps): Add Italy regions and autonomous provinces",
+    "user": {
+      "login": "Aitema-gmbh"
+    },
+    "created_at": "2025-06-11T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-33562"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/33562"
+  },
+  {
+    "number": 33924,
+    "title": "feat(security): add guest user attributes and get_guest_user hook",
+    "user": {
+      "login": "betodealmeida"
+    },
+    "created_at": "2025-07-13T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-33924"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/33924"
+  },
+  {
+    "number": 33946,
+    "title": "feat: Remove charts from welcome page for users without access",
+    "user": {
+      "login": "sadpandajoe"
+    },
+    "created_at": "2025-07-16T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-33946"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/33946"
+  },
+  {
+    "number": 34111,
+    "title": "fix(sqllab): ensure SQL_QUERY_MUTATOR is called when previewing",
+    "user": {
+      "login": "hainenber"
+    },
+    "created_at": "2025-08-03T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-34111"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/34111"
+  },
+  {
+    "number": 34629,
+    "title": "feat: RTL Text Support",
+    "user": {
+      "login": "sha174n"
+    },
+    "created_at": "2025-09-13T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-34629"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/34629"
+  },
+  {
+    "number": 34640,
+    "title": "feat(theming): add dynamic theme-aware login page",
+    "user": {
+      "login": "rusackas"
+    },
+    "created_at": "2025-09-15T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "unstable",
+    "draft": true,
+    "head": {
+      "ref": "contrib/pr-34640"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/34640"
+  },
+  {
+    "number": 34785,
+    "title": "feat: allow drill-to-details to a specific chart",
+    "user": {
+      "login": "mikebridge"
+    },
+    "created_at": "2025-09-27T00:00:00Z",
+    "updated_at": "2026-07-12T00:00:00Z",
+    "mergeable_state": "dirty",
+    "draft": false,
+    "head": {
+      "ref": "contrib/pr-34785"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "html_url": "https://github.com/raymondtangsc/superset/pull/34785"
+  }
+]

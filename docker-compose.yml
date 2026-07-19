@@ -1,0 +1,12 @@
+services:
+  unblocker:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /srv/data/unblocker.db
+    volumes:
+      - ./data:/srv/data
+    restart: unless-stopped
