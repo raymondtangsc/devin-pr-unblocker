@@ -467,9 +467,10 @@
     <div class="counters" style="max-width:54rem">
       <div class="counter"><span class="n">01</span>
         <p><strong>Control plane vs. agent plane.</strong> The loop — detect, classify,
-        dispatch, verify — is a deterministic state machine in plain code. The agent gets
-        exactly <em class="hl">one box: the judgment step</em>. A failed, stuck, or lying
-        session becomes a failed work item — never a wedged system.<span class="src">orchestrator.py — no model call anywhere in the control path</span></p></div>
+        dispatch, verify — is a deterministic state machine in plain code. The agent is
+        confined to <em class="hl">the one stage that needs judgment</em> — resolving
+        conflicts, repairing CI. A failed, stuck, or lying session becomes a failed work
+        item — never a wedged system.<span class="src">orchestrator.py — no model call anywhere in the control path</span></p></div>
       <div class="counter"><span class="n">02</span>
         <p><strong>Level-triggered, not event-dependent.</strong> Discovery is sweep-only:
         each cycle re-derives the blocked set from repo state, so dropped events cost
@@ -492,12 +493,13 @@
         timestamped. The dashboard is a <em class="hl">view of the architecture</em>, not a
         bolt-on.<span class="src">store.py — state machine + event log behind the metrics</span></p></div>
     </div>
-    <div class="notes"><span class="win">3:10 – 3:45 · ~60 words</span>
-      Three decisions worth defending. Detection has no model in it — an API sweep; agent
-      spend starts where judgment starts. The classifier refuses by default: if we can't
-      prove a blocked PR is mechanical, we don't touch it — that's where the 137 skipped
-      PRs come from. And we never trust the agent's self-report: success is re-verified
-      against GitHub before it counts.
+    <div class="notes"><span class="win">3:10 – 3:45 · ~65 words</span>
+      Five decisions. The control plane is deterministic code — the agent is confined to
+      the one stage that needs judgment. Discovery is sweep-only; the single webhook is a
+      human's label. The agent is held to a teammate's bar — budgeted, scoped, verified
+      against GitHub, never taken on its word. It never interrupts a human: three days of
+      quiet before touching a PR, label to override. And everything leaves a record —
+      that's the dashboard.
     </div>
   </div>
 </section>
@@ -574,31 +576,31 @@
     <div class="eyebrow"><span>When · beat 9</span><span class="t">4:40 – 5:00</span></div>
     <h2>Start where the risk is zero.</h2>
     <div class="path">
-      <div class="step"><span class="when">week 1</span>
-        <p><strong>Measure, read-only.</strong> Point the sweep at your repo. No sessions,
-        no writes — just your own blocked-PR number and what it's costing you.</p></div>
-      <div class="step"><span class="when">weeks 2–3</span>
+      <div class="step"><span class="when">day 1</span>
+        <p><strong>Measure, read-only.</strong> Point the sweep at your repo — an afternoon
+        of setup. No sessions, no writes: just your own blocked-PR number and what it's
+        costing you.</p></div>
+      <div class="step"><span class="when">days 2–5</span>
         <p><strong>Conflicts-only pilot.</strong> Label-gated dispatch, hard ACU budget,
         every rescue human-reviewed. The 145-equivalent in your backlog.</p></div>
-      <div class="step"><span class="when">month 2</span>
-        <p><strong>Add CI repair.</strong> The classifier already separates red checks from
-        review-waits — turn on the second lane.</p></div>
-      <div class="step"><span class="when">month 3</span>
-        <p><strong>Blame the merge that broke them.</strong> The sweep's snapshots bracket
-        every merge into main — join them and you get <em>"this merge conflicted 11 open
-        PRs"</em>: a per-merge cost metric nobody has today, and targeted hints that make
-        every rescue cheaper.</p></div>
+      <div class="step"><span class="when">week 2</span>
+        <p><strong>CI repair + merge attribution.</strong> Turn on the second lane, and join
+        the sweep's snapshots to get <em>"this merge conflicted 11 open PRs"</em> — a
+        per-merge cost metric nobody has today.</p></div>
       <div class="step"><span class="when">then</span>
         <p><strong>Same rail, more teammate jobs.</strong> The dispatch→verify→report loop is
         generic. Next candidate we already scoped: sweeping a known bug-class across 17 call
         sites — a weekend, not a project, once the rail exists.</p></div>
     </div>
+    <div class="foot">Calibration for this timeline: everything in this deck — the analysis,
+      the system, the live rescues — was built in hours. Two weeks is padded for your
+      approvals, not for the engineering.</div>
     <div class="notes"><span class="win">4:40 – 5:00 · ~45 words</span>
-      Rolling this out is low-risk by construction. Week one: measure your repo, read-only —
-      you get your own 62 percent number for free. Then a conflicts-only pilot behind a label
-      and a budget; then CI repair; then attribution — which merge broke which PRs, a cost
-      metric nobody has today. And the rail generalizes: any mechanical backlog becomes a
-      teammate job. Thanks — questions welcome.
+      Rolling this out is fast because building it was fast — everything you've seen took
+      hours, not weeks. Day one: measure your repo, read-only — your own 62 percent number
+      by the afternoon. Days two to five: conflicts-only pilot behind a label and a budget.
+      Week two: CI repair and merge attribution. Two weeks to a working teammate — and the
+      rail generalizes to any mechanical backlog. Thanks — questions welcome.
     </div>
   </div>
 </section>
