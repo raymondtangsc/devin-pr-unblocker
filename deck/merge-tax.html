@@ -157,6 +157,8 @@
   .inlets .pnode { padding:.45rem .8rem; }
   .refuse { margin-top:1rem; display:flex; align-items:center; gap:.6rem;
             font-size:.84rem; color:var(--ink-2); }
+  .refuse.block { display:block; margin-top:.55rem; line-height:1.5; }
+  .refuse.block .tag { margin-right:.55rem; }
   .refuse .tag { font-family:var(--mono); font-size:.7rem; color:var(--ink-3);
                  background:var(--sunk); border-radius:3px; padding:.25rem .6rem; }
   .scope { display:grid; grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
@@ -409,13 +411,18 @@
     <div class="refuse"><span class="tag">refuse lane</span>
       blocked but nothing red → <strong>137 PRs left for humans.</strong> Review is your job;
       its job is making sure what you review is mergeable.</div>
+    <div class="refuse block"><span class="tag">phase 2</span>the <strong>89 red-CI
+      PRs</strong> are detected and classified, and the repair prompt is written — but that
+      lane is deliberately <strong>off</strong> for the pilot. Conflicts first, one lane at
+      a time.</div>
     <div class="scope">
-      <div class="yes"><h3>Assigned to the teammate</h3>
-        <ul><li>145 merge conflicts — rebase, resolve on the merits</li>
-            <li>89 failing required checks — diagnose the red job, fix it</li></ul></div>
-      <div class="no"><h3>Explicitly not its job</h3>
+      <div class="yes"><h3>Assigned today</h3>
+        <ul><li><strong>145 merge conflicts</strong> — rebase, resolve on the merits.
+            This is the lane running live.</li></ul></div>
+      <div class="no"><h3>Not its job</h3>
         <ul><li>Reviewing, approving, or merging anything</li>
-            <li>The 137 PRs waiting on human judgment</li></ul></div>
+            <li>The <strong>137 PRs</strong> waiting on human judgment</li>
+            <li>PRs pushed to in the last 3 days — someone's still working</li></ul></div>
     </div>
     <div class="foot">ACU = agent compute unit, Devin's metered unit of work — the budget
       lever: every session gets a hard ACU ceiling. Trigger design: discovery is sweep-only —
@@ -425,8 +432,9 @@
       So we hired a teammate for exactly this work. Two ways in: a scheduled sweep that
       autonomously finds stale, unmergeable PRs — and one webhook, a human labeling a PR to
       ask for it now. Detection is deterministic, no model. Each blocked PR gets a tracking
-      issue, then one budget-capped Devin session. And note the refuse lane: 137 PRs waiting
-      on human review — never touched.
+      issue, then one budget-capped Devin session. Two things it won't do: the 137 PRs waiting
+      on human review, and — for now — the 89 red-CI ones. That lane is built, but off. One
+      lane at a time.
     </div>
   </div>
 </section>
@@ -558,7 +566,9 @@
         <div class="l">cost per rescued PR — unit economics on the dashboard,
         judged against the engineer-days already sunk in each PR</div></div>
     </div>
-    <div class="foot">Every state transition is timestamped in the store; the dashboard and
+    <div class="foot">All live evidence is the conflict lane; the CI-repair lane is built
+      but deliberately off for the pilot, so nothing here claims it. Every state transition is
+      timestamped in the store; the dashboard and
       <code>/metrics</code> expose live counts, the blocker mix, and a full audit log.
       The mock demo deliberately escalates every 4th session — a demo where nothing fails
       teaches you nothing about how failures surface.</div>
