@@ -227,7 +227,15 @@ Two definitions worth knowing:
 
 Chosen after profiling `apache/superset`: 8,000 commits, 376 open PRs, 267 open issues.
 Full workings, with every figure's provenance, are in
-[`notes/findings.md`](notes/findings.md); the pitch is in [`deck/`](deck/).
+[`notes/findings.md`](notes/findings.md).
+
+The pitch is a self-contained HTML deck — no build, no server:
+
+```bash
+open deck/merge-tax.html     # N = speaker notes, T = pin light/dark
+```
+
+See [`deck/README.md`](deck/README.md) for the beat structure and presenting notes.
 
 | Finding | Value |
 |---|---|

@@ -1,5 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR Rot — hiring a Devin teammate for mechanical PR work</title>
-
+<style>
+  /* minimal reset -- the hosted version got this from its wrapper */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  img, svg { max-width: 100%; }
+  table { border-collapse: collapse; }
+</style>
 <style>
   :root {
     --paper:#FAFBFC; --sunk:#F1F3F6; --card:#FFFFFF;
@@ -85,6 +97,13 @@
               transition:opacity .15s; }
   #notesbtn:hover, #notesbtn:focus-visible,
   body.notes-on #notesbtn { opacity:1; }
+  #themebtn { position:fixed; right:.9rem; bottom:2.9rem; z-index:11;
+              font-family:var(--mono); font-size:.7rem; letter-spacing:.06em;
+              color:var(--ink-3); background:var(--card);
+              border:1px solid var(--rule); border-radius:5px;
+              padding:.35rem .7rem; cursor:pointer; opacity:0;
+              transition:opacity .15s; }
+  #themebtn:hover, #themebtn:focus-visible { opacity:1; }
 
   /* ---------- beat 1 diagram ---------- */
   .diverge { margin:1.6rem 0 .4rem; }
@@ -278,9 +297,13 @@
   footer { padding:2.5rem 0 3.5rem; border-top:1px solid var(--rule);
            font-size:.78rem; color:var(--ink-3); }
 </style>
+</head>
+<body>
+
 
 <div id="pace"></div>
 <button id="notesbtn" type="button" aria-pressed="false">notes · N</button>
+<button id="themebtn" type="button">theme · T</button>
 
 <!-- ============ 0 · TITLE ============ -->
 <section class="beat">
@@ -720,4 +743,19 @@
   });
   document.getElementById('notesbtn').addEventListener('click', toggleNotes);
   if (location.hash === '#notes') toggleNotes();
+
+  // Theme: follows the OS by default. The toggle pins it, which matters when
+  // recording on a machine whose OS theme is not the one you want on camera.
+  const toggleTheme = () => {
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    const cur = document.documentElement.dataset.theme || (dark ? 'dark' : 'light');
+    document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+  };
+  addEventListener('keydown', (e) => {
+    if ((e.key === 't' || e.key === 'T') && !e.metaKey && !e.ctrlKey && !e.altKey)
+      toggleTheme();
+  });
+  document.getElementById('themebtn').addEventListener('click', toggleTheme);
 </script>
+</body>
+</html>
