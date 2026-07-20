@@ -520,3 +520,48 @@ def test_dispatch_skips_pr_awaiting_review() -> None:
     assert item.state == st.SKIPPED
     assert "human review" in (item.detail or "")
     assert item.session_id is None
+
+
+# ------------------------------------------------------------- scheduled sweep
+
+
+def test_sweep_disabled_returns_immediately() -> None:
+    """POLL_INTERVAL_SECONDS=0 means webhook-only operation, not a busy loop."""
+    from app.main import run_sweep
+
+    orch = Orchestrator(make_cfg(), Store(":memory:"), MockGitHubClient(), MockDevinClient())
+    asyncio.run(asyncio.wait_for(run_sweep(orch, 0), timeout=1))
+    assert not orch.store.all_items(), "disabled sweep must not detect anything"
+
+
+def test_sweep_detects_and_is_idempotent_across_cycles() -> None:
+    """The sweep is the level-triggered source of truth.
+
+    Two cycles over unchanged repo state must produce exactly one tracking
+    issue per blocked PR -- re-detection is free, duplicates would bill twice.
+    """
+    from app.main import run_sweep
+
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+
+    async def two_cycles() -> None:
+        task = asyncio.create_task(run_sweep(orch, 0.01))
+        for _ in range(200):
+            await asyncio.sleep(0.01)
+            events = orch.store.recent_events(200)
+            if sum(1 for e in events if e["kind"] == "detect") >= 2:
+                break
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+
+    import contextlib
+
+    asyncio.run(two_cycles())
+
+    detects = [e for e in orch.store.recent_events(200) if e["kind"] == "detect"]
+    assert len(detects) >= 2, "expected at least two sweep cycles"
+    tracked = orch.store.all_items()
+    assert len(tracked) == len({i.pr_number for i in tracked})
+    assert len(gh.issues) == len(tracked), "one issue per PR, despite repeat sweeps"

@@ -72,6 +72,14 @@ Why an issue in the middle: the trigger is repository activity, but the issue is
 the durable work item, the audit record, and the spend gate. A maintainer can
 also apply the label by hand to point Devin at any PR.
 
+**Trigger design — poll for completeness, webhook for latency.** The scheduled
+sweep (`POLL_INTERVAL_SECONDS`, default 600) is the source of truth: it
+re-derives blocked-PRs from actual repo state every cycle, so a dropped webhook
+costs latency, not coverage. Webhooks are edge-triggered and lossy; the sweep is
+level-triggered and idempotent — the same reconciliation argument Kubernetes is
+built on. Behind-the-firewall deployments run poll-only (`0` disables the sweep
+for webhook-only setups).
+
 | File | Role |
 |---|---|
 | `app/config.py` | Config + the upstream-repo guardrail |

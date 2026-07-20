@@ -34,6 +34,28 @@ log = logging.getLogger("unblocker.api")
 RECONCILE_INTERVAL_SECONDS = 10
 
 
+async def run_sweep(orch, interval_seconds: int) -> None:
+    """Run the scheduled detection sweep every ``interval_seconds``.
+
+    Module-level so tests can drive it directly. ``interval_seconds <= 0``
+    disables the loop entirely (webhook-only operation).
+    """
+    if interval_seconds <= 0:
+        return
+    while True:
+        try:
+            result = await orch.handle_repo_event(
+                orch.cfg.github_repo, reason="scheduled sweep"
+            )
+            if result.get("newly_tracked"):
+                logging.getLogger("unblocker.sweep").info(
+                    "sweep tracked %s new item(s)", result["newly_tracked"]
+                )
+        except Exception:
+            logging.getLogger("unblocker.sweep").exception("sweep failed")
+        await asyncio.sleep(interval_seconds)
+
+
 def create_app() -> FastAPI:
     cfg = load_config()
     store = Store(cfg.db_path)
@@ -45,13 +67,15 @@ def create_app() -> FastAPI:
 
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI):
-        task = asyncio.create_task(reconciler())
+        tasks = [asyncio.create_task(reconciler()), asyncio.create_task(sweeper())]
         try:
             yield
         finally:
-            task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await task
+            for task in tasks:
+                task.cancel()
+            for task in tasks:
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
             store.close()
 
     app = FastAPI(title="Devin PR Unblocker", version="1.0.0", lifespan=lifespan)
@@ -85,6 +109,17 @@ def create_app() -> FastAPI:
             except Exception:
                 log.exception("reconciler pass failed")
             await asyncio.sleep(RECONCILE_INTERVAL_SECONDS)
+
+    async def sweeper() -> None:
+        """Scheduled sweep — the level-triggered source of truth for detection.
+
+        Webhooks are edge-triggered and lossy: a dropped delivery means a PR
+        silently never gets rescued. The sweep re-derives blocked-PRs from
+        actual repo state every cycle, so a missed webhook costs latency, not
+        coverage. Sweeps are idempotent (dedup happens in the store), which is
+        what makes running both paths at once safe.
+        """
+        await run_sweep(orch, cfg.poll_interval_seconds)
 
     # --------------------------------------------------------------- routes
 

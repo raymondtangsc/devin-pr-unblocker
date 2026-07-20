@@ -68,6 +68,14 @@ class Config:
         default_factory=lambda: _env_int("MAX_DISPATCHES_PER_EVENT", 3)
     )
     db_path: str = field(default_factory=lambda: _env("DB_PATH", "data/unblocker.db"))
+    # The scheduled sweep is the source of truth for detection: webhooks are a
+    # latency optimization that can be dropped (deploy windows, dead tunnels,
+    # exhausted retries), and a silently missed PR is the worst failure mode for
+    # a system whose whole point is that nothing falls through the cracks.
+    # Sweeps are idempotent, so re-detection is free. 0 disables (webhook-only).
+    poll_interval_seconds: int = field(
+        default_factory=lambda: _env_int("POLL_INTERVAL_SECONDS", 600)
+    )
 
     @property
     def live_devin(self) -> bool:
