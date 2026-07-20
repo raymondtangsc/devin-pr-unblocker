@@ -443,27 +443,33 @@
 <section class="beat">
   <div class="wrap">
     <div class="eyebrow"><span>How · beat 5 · demo</span><span class="t">2:25 – 3:10</span></div>
-    <h2>Watch it rescue a 404-day-old contribution.</h2>
+    <h2>A maintainer asked for this rebase 220 days ago.</h2>
+    <p class="lede">A contributor added Italy's regions to Superset's country maps —
+      <strong>14 months ago</strong>. It conflicted. Seven months ago a maintainer replied
+      <em>"this PR is in need of a rebase"</em>. Nobody had the appetite. The author never
+      pushed again.</p>
     <div class="demosteps">
-      <div><b>Issue labelled</b><p>The tracking issue gets <code>devin-unblock</code> —
-        the human approval gate for spend.</p></div>
-      <div><b>Session dispatched</b><p>One Devin session, hard ACU ceiling, scoped to the
-        PR's own branch. Nobody watches it work.</p></div>
-      <div><b>Conflict resolved</b><p>3-file conflict on a real contributor's map feature —
-        rebased preserving their intent, tests run.</p></div>
-      <div><b>Verified &amp; reported</b><p>GitHub re-checked: <code>dirty → mergeable</code>.
-        Verdict commented on the issue for the audit trail.</p></div>
+      <div><b>Detected</b><p>Sweep finds it: <code>dirty</code>, author last pushed
+        <strong>423 days</strong> ago — stalled, safe to touch.</p></div>
+      <div><b>Dispatched</b><p>Tracking issue labelled; one Devin session, hard ACU
+        ceiling, scoped to the PR's own branch.</p></div>
+      <div><b>Resolved</b><p>Rebased onto master, 3-file conflict resolved preserving the
+        contributor's work, tests run.</p></div>
+      <div><b>Verified</b><p>GitHub re-checked: <code>dirty → mergeable</code>. Verdict
+        commented on the issue. <strong>~9 minutes.</strong></p></div>
     </div>
-    <span class="cutline">⌘ cut to screen recording — live dashboard + Devin session + the PR flipping green</span>
-    <div class="foot">Demo PRs are real upstream contributions (apache/superset #33562, #34629 —
-      404 and 310 days old) replayed onto our fork with their genuine conflicts intact.
-      The conflicts Devin resolves are the ones that actually defeated these PRs upstream.</div>
-    <div class="notes"><span class="win">2:25 – 3:10 · demo VO, ~55 words</span>
-      This PR is a real contribution — Italy map regions, open 404 days upstream, dead on a
-      3-file conflict. I label the issue: that's the spend gate. A session spawns with a hard
-      ACU cap. Devin rebases, resolves preserving the contributor's intent, pushes. The system
-      re-checks GitHub — dirty becomes mergeable — and comments the verdict. Total wall time:
-      about nine minutes.
+    <span class="cutline">⌘ cut to screen recording — dashboard · Devin session · the PR going green</span>
+    <div class="foot">Real upstream contribution (apache/superset#33562, open 423 days),
+      replayed onto our fork with its genuine conflict intact — the same conflict that
+      defeated it upstream. What Devin cannot decide: a maintainer later noted these maps
+      should be generated from their Jupyter notebook. That's a human call — the point is
+      it can now <em>be</em> made, instead of the PR sitting unmergeable.</div>
+    <div class="notes"><span class="win">2:25 – 3:10 · demo VO, ~60 words</span>
+      This is a real contribution — Italy's regions for Superset's country maps, opened
+      fourteen months ago. It hit a conflict. Seven months ago a maintainer wrote "this PR
+      is in need of a rebase" — and nobody did it. The author never pushed again. The sweep
+      spots it, one session spawns, Devin rebases and resolves the conflict, and the system
+      re-checks GitHub: dirty becomes mergeable. About nine minutes.
     </div>
   </div>
 </section>
