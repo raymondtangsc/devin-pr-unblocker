@@ -213,6 +213,12 @@
       justify-content:center; margin-bottom:.55rem; }
   .demosteps b { display:block; font-size:.92rem; margin-bottom:.25rem; }
   .demosteps p { margin:0; font-size:.82rem; color:var(--ink-3); }
+  .links { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+  .links a { font-family:var(--mono); font-size:.72rem; text-decoration:none;
+             color:var(--accent-ink); background:var(--card);
+             border:1px solid var(--rule); border-radius:5px; padding:.32rem .65rem; }
+  .links a:hover, .links a:focus-visible { border-color:var(--accent); }
+  .links a b { color:var(--ink); font-weight:600; }
   .cutline { font-family:var(--mono); font-size:.78rem; color:var(--ink-3);
              border:1px dashed var(--rule); border-radius:6px;
              padding:.7rem 1rem; margin-top:1.8rem; display:inline-block; }
@@ -487,33 +493,41 @@
 <section class="beat">
   <div class="wrap">
     <div class="eyebrow"><span>How · beat 5 · demo</span><span class="t">2:25 – 3:10</span></div>
-    <h2>A maintainer asked for this rebase 220 days ago.</h2>
-    <p class="lede">A contributor added Italy's regions to Superset's country maps —
-      <strong>14 months ago</strong>. It conflicted. Seven months ago a maintainer replied
-      <em>"this PR is in need of a rebase"</em>. Nobody had the appetite. The author never
-      pushed again.</p>
+    <h2>“Approved and green.” Then it rotted.</h2>
+    <p class="lede">A maintainer's own fix, <strong>approved 286 days ago</strong>. Thirty-one
+      days ago a reviewer confirmed it was <em>"approved and green, just waiting on"</em> one
+      unanswered question. Today it is conflicted — it rotted <em class="hl">while waiting for
+      a human to reply</em>.</p>
     <div class="demosteps">
-      <div><b>Detected</b><p>Sweep finds it: <code>dirty</code>, author last pushed
-        <strong>423 days</strong> ago — stalled, safe to touch.</p></div>
-      <div><b>Dispatched</b><p>Tracking issue labelled; one Devin session, hard ACU
-        ceiling, scoped to the PR's own branch.</p></div>
-      <div><b>Resolved</b><p>Rebased onto master, 3-file conflict resolved preserving the
-        contributor's work, tests run.</p></div>
-      <div><b>Verified</b><p>GitHub re-checked: <code>dirty → mergeable</code>. Verdict
-        commented on the issue. <strong>~9 minutes.</strong></p></div>
+      <div><b>Detected</b><p><code>dirty</code>; author last pushed <strong>286 days</strong>
+        ago — stalled, safe to touch.</p></div>
+      <div><b>Dispatched</b><p>Tracking issue labelled; one session, ACU-capped, scoped to
+        the PR's branch.</p></div>
+      <div><b>Resolved</b><p>Two renames collided — master's <code>owner→editor</code> and the
+        contributor's <code>get_tag→get_or_create_tag</code>. Devin reconciled both, and
+        ported the rename into two test files master added <em>after</em> the PR was
+        written.</p></div>
+      <div><b>Verified</b><p>Re-checked on GitHub: <code>dirty → mergeable</code>. Verdict
+        commented on the issue.</p></div>
+    </div>
+    <div class="links">
+      <a href="https://github.com/apache/superset/pull/35541" target="_blank" rel="noopener">original &nbsp;<b>apache/superset#35541</b></a>
+      <a href="https://github.com/raymondtangsc/superset/pull/12" target="_blank" rel="noopener">replay &nbsp;<b>fork #12</b></a>
+      <a href="https://github.com/raymondtangsc/superset/issues/33" target="_blank" rel="noopener">tracking issue &nbsp;<b>#33</b></a>
+      <a href="https://app.devin.ai/sessions/8f709dce0272459382ad19d64fb98a8f" target="_blank" rel="noopener">Devin session &nbsp;<b>8f709dce</b></a>
     </div>
     <span class="cutline">⌘ cut to screen recording — dashboard · Devin session · the PR going green</span>
-    <div class="foot">Real upstream contribution (apache/superset#33562, open 423 days),
-      replayed onto our fork with its genuine conflict intact — the same conflict that
-      defeated it upstream. What Devin cannot decide: a maintainer later noted these maps
-      should be generated from their Jupyter notebook. That's a human call — the point is
-      it can now <em>be</em> made, instead of the PR sitting unmergeable.</div>
+    <div class="foot">Real contributor commits, replayed onto our fork with the genuine
+      conflict intact. What Devin does not touch: the PR also waits on a factual question
+      about which release the bug traces to, and on a second PR landing. Those are human
+      calls — the point is they can now <em>be</em> made, instead of the PR sitting
+      unmergeable while they are answered.</div>
     <div class="notes"><span class="win">2:25 – 3:10 · demo VO, ~60 words</span>
-      This is a real contribution — Italy's regions for Superset's country maps, opened
-      fourteen months ago. It hit a conflict. Seven months ago a maintainer wrote "this PR
-      is in need of a rebase" — and nobody did it. The author never pushed again. The sweep
-      spots it, one session spawns, Devin rebases and resolves the conflict, and the system
-      re-checks GitHub: dirty becomes mergeable. About nine minutes.
+      This is a maintainer's own bug fix, approved two hundred and eighty-six days ago. A
+      month ago a reviewer said it was "approved and green" — just waiting on one question.
+      Nobody answered, and while it waited, main moved: today it conflicts. Watch. The sweep
+      finds it, one session spawns, and Devin reconciles two renames that collided — then we
+      re-check GitHub: dirty becomes mergeable.
     </div>
   </div>
 </section>
