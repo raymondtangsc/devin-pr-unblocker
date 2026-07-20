@@ -205,6 +205,8 @@
   .snip code .s { color:var(--ok); }
   .guardline { font-family:var(--mono); font-size:.76rem; color:var(--ink-3);
                margin-top:1.1rem; }
+  .src { display:block; font-family:var(--mono); font-size:.66rem;
+         color:var(--ink-3); margin-top:.4rem; letter-spacing:.03em; }
 
   /* ---------- why (beat 7) ---------- */
   .whygrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));
@@ -460,31 +462,19 @@
   <div class="wrap">
     <div class="eyebrow"><span>How · beat 6</span><span class="t">3:10 – 3:45</span></div>
     <h2>Three decisions in the code.</h2>
-    <div class="snips">
-      <div class="snip">
-        <header><b>No model where a query will do</b><span>orchestrator.py · detect()</span></header>
-        <pre><code><span class="c"># Detection is an API sweep + a dictionary lookup. No model call</span>
-<span class="c"># anywhere in this path — agent spend starts where judgment starts.</span>
-prs = <span class="k">await</span> self.github.list_open_prs(repo)
-hydrated = <span class="k">await</span> self._hydrate(repo, candidates)  <span class="c"># mergeable_state is lazy</span></code></pre>
-      </div>
-      <div class="snip">
-        <header><b>Refusal is a feature</b><span>orchestrator.py · classify()</span></header>
-        <pre><code><span class="k">try</span>:
-    failing = <span class="k">await</span> self.github.failing_checks(repo, pr.head_sha)
-<span class="k">except</span> Exception:
-    <span class="k">return</span> <span class="k">None</span>  <span class="c"># cannot PROVE it's mechanical -> leave it alone</span>
-<span class="k">if</span> failing:
-    <span class="k">return</span> <span class="s">"failing_ci"</span>
-<span class="k">return</span> <span class="k">None</span>      <span class="c"># blocked, nothing red -> a human's job, skip</span></code></pre>
-      </div>
-      <div class="snip">
-        <header><b>The agent's report is a claim, not evidence</b><span>orchestrator.py · reconcile()</span></header>
-        <pre><code><span class="k">if</span> state == SUCCEEDED:
-    verified, why = <span class="k">await</span> self._verify_unblocked(item)  <span class="c"># re-fetch from GitHub</span>
-    <span class="k">if not</span> verified:
-        state = FAILED  <span class="c"># success rate measures results, not confidence</span></code></pre>
-      </div>
+    <div class="counters" style="max-width:52rem">
+      <div class="counter"><span class="n">01</span>
+        <p><strong>No model where a query will do.</strong> Detection and classification are
+        deterministic API sweeps — <em class="hl">agent spend starts where judgment starts</em>,
+        not before.<span class="src">orchestrator.py · detect()</span></p></div>
+      <div class="counter"><span class="n">02</span>
+        <p><strong>Refusal is a feature.</strong> If the system can't <em class="hl">prove</em> a
+        blocked PR is mechanical — checks unreadable, nothing red — it doesn't touch it.
+        The 137 review-bound PRs are skipped by this one rule.<span class="src">orchestrator.py · classify() → return None</span></p></div>
+      <div class="counter"><span class="n">03</span>
+        <p><strong>An agent's report is a claim, not evidence.</strong> A success only counts
+        after re-fetching the PR from GitHub — the success rate measures
+        <em class="hl">results, not confidence</em>.<span class="src">orchestrator.py · _verify_unblocked()</span></p></div>
     </div>
     <div class="guardline">also load-bearing: upstream repo hard-blocklisted · idempotent dispatch ·
       per-event dispatch cap · per-session ACU ceiling · pushes to the PR branch only</div>
