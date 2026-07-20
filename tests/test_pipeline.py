@@ -877,3 +877,27 @@ def test_stale_issue_reference_self_heals() -> None:
     assert calls[0] == 999 and calls[-1] == real, "must retry against the real issue"
     assert orch.store.get(28627).issue_number == real
     assert "issue_repointed" in [e["kind"] for e in orch.store.recent_events(10)]
+
+
+def test_system_errors_are_not_reported_as_needing_a_human() -> None:
+    """'Needs a human' must mean the agent tried and couldn't — nothing else.
+
+    A dispatch that never reached Devin says nothing about whether the conflict
+    was resolvable, so counting it as a failure both slanders the agent and
+    corrupts the success rate.
+    """
+
+    class Broken(MockDevinClient):
+        async def create_session(self, prompt, *, title, tags, max_acu):
+            raise RuntimeError("network down")
+
+    orch = Orchestrator(
+        make_cfg(min_quiet_days=0, max_dispatches_per_event=2),
+        Store(":memory:"), MockGitHubClient(), Broken(),
+    )
+    asyncio.run(orch.handle_repo_event(FORK, reason="test"))
+
+    m = orch.store.metrics()
+    assert m["errored"] == 2, "plumbing failures are errors, not agent verdicts"
+    assert m["failed"] == 0, "the agent never got to try"
+    assert m["success_rate"] is None, "no verdicts yet, so no rate"

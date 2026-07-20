@@ -21,6 +21,7 @@ _STATE_STYLE = {
     "running": ("warn", "running"),
     "succeeded": ("ok", "unblocked"),
     "failed": ("crit", "needs a human"),
+    "errored": ("warn", "system error"),
     "skipped": ("neutral", "skipped"),
 }
 
@@ -117,7 +118,8 @@ def render_dashboard(
         ("", metrics["queued"], "queued — awaiting dispatch"),
         ("", metrics["in_flight"], "in flight — session working"),
         ("ok", metrics["succeeded"], "unblocked, verified"),
-        ("crit", metrics["failed"], "need a human"),
+        ("crit", metrics["failed"], "Devin couldn't resolve — needs a human"),
+        ("warn", metrics["errored"], "system errors (not the agent)"),
         ("", rate_txt, "verified success rate"),
         ("", med_txt, "median time to unblock"),
     ]

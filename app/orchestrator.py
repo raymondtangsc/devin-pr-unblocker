@@ -574,7 +574,7 @@ class Orchestrator:
         ]
         for n, r in zip(to_dispatch, results):
             if isinstance(r, Exception):
-                self.store.set_state(n, st.FAILED, detail=f"dispatch error: {r}")
+                self.store.set_state(n, st.ERRORED, detail=f"dispatch error: {r}")
                 self.store.log("dispatch_error", f"PR #{n}: {r}", pr_number=n)
 
         if deferred:

@@ -5,7 +5,7 @@
     --paper:#FAFBFC; --sunk:#F1F3F6; --card:#FFFFFF;
     --ink:#10141C; --ink-2:#39424F; --ink-3:#6B7684; --rule:#DDE2E8;
     --accent:#20A7C9; --accent-ink:#12708A;
-    --ok:#2E9E6B; --warn:#D9902B; --crit:#B02A37;
+    --ok:#2E9E6B; --warn:#D9902B; --crit:#B02A37; --c2:#7C5CD3;
     --note-bg:#FBF6E9; --note-edge:#D9902B;
     --serif: ui-serif,"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
     --sans: system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
@@ -16,7 +16,7 @@
       --paper:#0D1017; --sunk:#12161F; --card:#161B25;
       --ink:#EDF0F4; --ink-2:#B3BCC8; --ink-3:#7E8794; --rule:#242C38;
       --accent:#3EB8D6; --accent-ink:#6FD0E6;
-      --ok:#33A071; --warn:#C2801F; --crit:#C4444F;
+      --ok:#33A071; --warn:#C2801F; --crit:#C4444F; --c2:#8264DB;
       --note-bg:#1C1A12; --note-edge:#C2801F;
     }
   }
@@ -24,14 +24,14 @@
     --paper:#0D1017; --sunk:#12161F; --card:#161B25;
     --ink:#EDF0F4; --ink-2:#B3BCC8; --ink-3:#7E8794; --rule:#242C38;
     --accent:#3EB8D6; --accent-ink:#6FD0E6;
-    --ok:#33A071; --warn:#C2801F; --crit:#C4444F;
+    --ok:#33A071; --warn:#C2801F; --crit:#C4444F; --c2:#8264DB;
     --note-bg:#1C1A12; --note-edge:#C2801F;
   }
   :root[data-theme="light"] {
     --paper:#FAFBFC; --sunk:#F1F3F6; --card:#FFFFFF;
     --ink:#10141C; --ink-2:#39424F; --ink-3:#6B7684; --rule:#DDE2E8;
     --accent:#20A7C9; --accent-ink:#12708A;
-    --ok:#2E9E6B; --warn:#D9902B; --crit:#B02A37;
+    --ok:#2E9E6B; --warn:#D9902B; --crit:#B02A37; --c2:#7C5CD3;
     --note-bg:#FBF6E9; --note-edge:#D9902B;
   }
 
@@ -102,15 +102,27 @@
   }
 
   /* ---------- stacked bar (beat 2) ---------- */
-  .bignum { font-family:var(--serif); font-size:clamp(3.2rem,8vw,5.8rem);
-            line-height:1; letter-spacing:-.03em; color:var(--crit); }
-  .bignum small { font-size:.35em; color:var(--ink-3); font-family:var(--sans);
-                  letter-spacing:0; }
+  .headline { display:flex; align-items:baseline; gap:1.1rem; flex-wrap:wrap;
+              margin:1.4rem 0 .3rem; }
+  .headline .num { font-family:var(--serif); font-size:clamp(3rem,7vw,5rem);
+                   line-height:.95; letter-spacing:-.03em; color:var(--crit); }
+  .headline .cap { font-size:clamp(1rem,1.7vw,1.2rem); color:var(--ink);
+                   max-width:26ch; line-height:1.3; }
+  .headline .cap span { color:var(--ink-3); }
+  .barlabel { display:flex; justify-content:space-between; font-family:var(--mono);
+              font-size:.66rem; letter-spacing:.1em; text-transform:uppercase;
+              color:var(--ink-3); margin:1.5rem 0 .35rem; }
+  .barlabel b { color:var(--crit); font-weight:500; }
   .stack { display:flex; height:2.6rem; border-radius:5px; overflow:hidden;
            gap:2px; background:var(--paper); margin:1.6rem 0 .6rem; }
   .seg { display:flex; align-items:center; justify-content:center;
-         font-family:var(--mono); font-size:.78rem; color:#fff;
-         font-variant-numeric:tabular-nums; white-space:nowrap; min-width:2px; }
+         font-family:var(--mono); font-size:.76rem; color:#fff;
+         font-variant-numeric:tabular-nums; white-space:nowrap; min-width:3px;
+         overflow:hidden; }
+  .stack.grouped { gap:0; }
+  .stack.grouped .seg + .seg { border-left:2px solid var(--paper); }
+  .stack.grouped .seg.split { border-left:2px solid var(--paper);
+                              margin-left:.45rem; }
   .legend { display:flex; flex-wrap:wrap; gap:1.2rem; font-size:.82rem;
             color:var(--ink-2); margin-top:.4rem; }
   .legend span { display:flex; align-items:center; gap:.45rem; }
@@ -332,12 +344,16 @@
     data exploration and visualization platform. <strong>349 contributors</strong> in the
     last year, <strong>3,121 commits</strong> in 2026 so far, main moves ~7×/day —
     big and busy enough that the physics is impossible to miss.</p>
-    <div class="bignum">153<small>&nbsp; of 376 open PRs are stuck on work
-      <strong>no human should have to do</strong></small></div>
-    <div class="stack" role="img" aria-label="376 open PRs by what is blocking them: 93 merge conflicts, 60 failing CI, 15 changes requested, 66 drafts, 137 awaiting review, 5 ready">
+    <div class="headline">
+      <span class="num">153</span>
+      <span class="cap">of 376 open PRs are stuck on work
+        <strong>no engineer chose</strong> <span>— and no human should have to redo</span></span>
+    </div>
+    <div class="barlabel"><b>← mechanical · ours to clear</b><span>human judgment →</span></div>
+    <div class="stack grouped" role="img" aria-label="376 open PRs by blocker: 93 merge conflicts, 60 failing CI, then 15 changes requested, 66 drafts, 137 awaiting review, 5 ready">
       <div class="seg" style="flex:93;background:var(--crit)">conflicts 93</div>
       <div class="seg" style="flex:60;background:var(--warn)">red CI 60</div>
-      <div class="seg" style="flex:15;background:var(--c2)"></div>
+      <div class="seg split" style="flex:15;background:var(--c2)">15</div>
       <div class="seg" style="flex:66;background:var(--ink-3)">drafts 66</div>
       <div class="seg" style="flex:137;background:#4a5462">awaiting review 137</div>
       <div class="seg" style="flex:5;background:var(--ok)"></div>
@@ -350,11 +366,8 @@
       <span><i class="sw" style="background:#4a5462"></i>awaiting review — 137</span>
       <span><i class="sw" style="background:var(--ok)"></i>ready — 5</span>
     </div>
-    <div class="foot">The two hot bands are the mechanical ones — <strong>153 PRs</strong>
-      that cannot merge for reasons no engineer chose. Counting the drafts and
-      changes-requested PRs that are <em>also</em> conflicted, 234 (62%) are mechanically
-      blocked in total; 153 is the subset a teammate should touch. Measured 2026-07-20 across
-      all 376 open PRs via the GitHub REST API    <div class="notes"><span class="win">0:50 – 1:25 · ~65 words</span>
+    <div class="foot">Every open PR, sorted by what is actually blocking it. Measured
+      2026-07-20 via the GitHub REST API    <div class="notes"><span class="win">0:50 – 1:25 · ~65 words</span>
       This demo is built on Apache Superset — an open-source data exploration and
       visualization platform. Big and busy: 349 contributors in the last year,
       thirty-one hundred commits in 2026 so far. We analysed all 376 open pull requests

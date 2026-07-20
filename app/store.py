@@ -21,10 +21,11 @@ ISSUE_FILED = "issue_filed"
 DISPATCHED = "dispatched"
 RUNNING = "running"
 SUCCEEDED = "succeeded"
-FAILED = "failed"
+FAILED = "failed"      # the agent tried and could not resolve it -> a human must
+ERRORED = "errored"    # our plumbing broke; nothing was learned about the PR
 SKIPPED = "skipped"
 
-TERMINAL = frozenset({SUCCEEDED, FAILED, SKIPPED})
+TERMINAL = frozenset({SUCCEEDED, FAILED, ERRORED, SKIPPED})
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS work_items (
@@ -230,6 +231,9 @@ class Store:
         for it in items:
             by_state[it.state] = by_state.get(it.state, 0) + 1
 
+        # Success rate is about the agent's work, so system errors are excluded:
+        # a dispatch that never reached Devin says nothing about whether Devin
+        # could have resolved the conflict.
         finished = [i for i in items if i.state in (SUCCEEDED, FAILED)]
         succeeded = [i for i in items if i.state == SUCCEEDED]
         durations = [d for i in succeeded if (d := i.duration_seconds) is not None]
@@ -248,6 +252,7 @@ class Store:
             "in_flight": sum(1 for i in items if i.state in (DISPATCHED, RUNNING)),
             "succeeded": len(succeeded),
             "failed": sum(1 for i in items if i.state == FAILED),
+            "errored": sum(1 for i in items if i.state == ERRORED),
             "success_rate": success_rate,
             "median_unblock_seconds": _median(durations),
             "total_acus": round(sum(i.acus_consumed for i in items), 2),
