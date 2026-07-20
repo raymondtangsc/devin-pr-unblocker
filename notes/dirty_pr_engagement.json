@@ -1,0 +1,1017 @@
+[
+ {
+  "number": 42191,
+  "title": "chore(ci): upgrade GHA runner image to Ubuntu 26.04",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": true
+ },
+ {
+  "number": 42190,
+  "title": "chore(build): remove legacy re-export shim used for development",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 42137,
+  "title": "fix(i18n): review and complete Portuguese (pt_PT) translation catalog",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": true
+ },
+ {
+  "number": 42112,
+  "title": "chore(deps): upgrade React 18 to 19",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 42046,
+  "title": "fix(explore): show the beginning date on time-series x-axis line charts",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 42018,
+  "title": "fix(dashboard): prevent result set overlap in mixed chart View as Table",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41914,
+  "title": "refactor(sqla2): migrate off sqlalchemy.ext.declarative, lock in 3 more 2.0 warnings",
+  "assoc": "MEMBER",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 41872,
+  "title": "feat(localization): add Cambodia currency and map updates",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 41859,
+  "title": "fix(chart): restore opt-out numeric x-axis for bar and mixed charts",
+  "assoc": "NONE",
+  "reviews": 11,
+  "approved": false
+ },
+ {
+  "number": 41798,
+  "title": "fix: show warning when table list is truncated in TableSelector",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 41598,
+  "title": "fix(mcp): document all 7 generate_chart chart_type values",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41551,
+  "title": "feat(versioning): version-history UI",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 41550,
+  "title": "feat(soft-delete): recently-deleted / recovery UI",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41549,
+  "title": "feat(soft-delete): deletion-retention purge of soft-deleted entities",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 33,
+  "approved": true
+ },
+ {
+  "number": 41548,
+  "title": "feat(dashboard): migrate dashboard state to Zustand + TanStack Query",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41527,
+  "title": "feat(date-filter): add sub-hour time range presets (needs review)",
+  "assoc": "NONE",
+  "reviews": 14,
+  "approved": false
+ },
+ {
+  "number": 41509,
+  "title": "feat(semantic layers): don't show samples tab in explore",
+  "assoc": "MEMBER",
+  "reviews": 7,
+  "approved": true
+ },
+ {
+  "number": 41470,
+  "title": "fix(a11y): add aria-label to dashboard IconButton and unlabeled call sites",
+  "assoc": "MEMBER",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 41468,
+  "title": "feat(dashboard): first-class iframe component with runtime CSP allowlist",
+  "assoc": "MEMBER",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 41388,
+  "title": "fix(ag-grid): persist value aggregation changes without a sort",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41387,
+  "title": "fix(ag-grid): show correct percentage metric value in summary row",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41339,
+  "title": "fix(explore): prevent full table scan when SQL expression is used as x-axis",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41279,
+  "title": "feat(multi-value): first-class support for array-typed dimensions (ClickHouse MVP)",
+  "assoc": "NONE",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 41075,
+  "title": "feat(versioning): version-history retention cleanup job",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 42,
+  "approved": true
+ },
+ {
+  "number": 40988,
+  "title": "feat: Version history UI for Explore and Dashboard",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40981,
+  "title": "Feature/dataset relationships design",
+  "assoc": "NONE",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40971,
+  "title": "feat(frontend): migrate react-router v5 to TanStack Router",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40954,
+  "title": "feat(explore): Add anomaly detection for timeseries charts",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 40919,
+  "title": "feat: enable translation or customization of the constants \"<NULL>\", \"TRUE\", \"FALSE\" and \"<empty string>\"",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 40918,
+  "title": "feat(dataset): per-dataset presentation time zone (PoC)",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40912,
+  "title": "feat(lineage): add lineage visualization across datasets, charts and dashboards",
+  "assoc": "MEMBER",
+  "reviews": 64,
+  "approved": false
+ },
+ {
+  "number": 40907,
+  "title": "feat(chart): add server-side column sorting for table and drill-detail views",
+  "assoc": "NONE",
+  "reviews": 5,
+  "approved": false
+ },
+ {
+  "number": 40877,
+  "title": "fix(urls): preserve repeated query parameters",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": true
+ },
+ {
+  "number": 40803,
+  "title": "feat(helm): Add annotations to secrets manifests",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": true
+ },
+ {
+  "number": 40679,
+  "title": "feat(i18n): translate asset metadata via configurable hook (SIP-161)",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40532,
+  "title": "fix(mcp): support dashboard owner filters",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40498,
+  "title": "fix(security): validate Google Sheets URLs before SQL interpolation",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 40472,
+  "title": "fix(rbac): widen permissions dropdown in role form",
+  "assoc": "NONE",
+  "reviews": 6,
+  "approved": false
+ },
+ {
+  "number": 40303,
+  "title": "feat(mcp): add list and get tools for annotation layers and annotations",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 7,
+  "approved": false
+ },
+ {
+  "number": 40297,
+  "title": "fix(dashboard): prevent native filter Select dropdown from obscuring input on small screens",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 40292,
+  "title": "fix(oauth2): idempotent OAuth2 completion and resilient listener",
+  "assoc": "MEMBER",
+  "reviews": 6,
+  "approved": true
+ },
+ {
+  "number": 40221,
+  "title": "feat(semantic-layers): containment-aware query cache",
+  "assoc": "MEMBER",
+  "reviews": 5,
+  "approved": false
+ },
+ {
+  "number": 40146,
+  "title": "test(mixed-timeseries): regression coverage for #37921 (first metric duplicated with multi-metric + group-by)",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40133,
+  "title": "feat(dashboard): granular (component-level) theming \u2014 Phases 1-4",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40078,
+  "title": "feat(country-map): redesign with worldview selection, Admin 0/1 support [SIP draft]",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 40062,
+  "title": "fix(a11y): replace role=button anti-pattern with Button components",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 39976,
+  "title": "feat: new splice RLSMethod",
+  "assoc": "MEMBER",
+  "reviews": 3,
+  "approved": true
+ },
+ {
+  "number": 39894,
+  "title": "fix(native-filters): populate granularity_sqla from datasource main_dttm_col for time-range parent cascade",
+  "assoc": "NONE",
+  "reviews": 9,
+  "approved": false
+ },
+ {
+  "number": 39892,
+  "title": "fix(reports): narrow spinner checks to viewport and tighten exception handling",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 39888,
+  "title": "chore(tags): TAGGING_SYSTEM to True by default",
+  "assoc": "MEMBER",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 39857,
+  "title": "fix(export/import): Export Import annotation layers along with dashboard and chart export and import",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 16,
+  "approved": false
+ },
+ {
+  "number": 39779,
+  "title": "fix(alerts): reset stuck WORKING reports to NOOP instead of ERROR on timeout",
+  "assoc": "MEMBER",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 39760,
+  "title": "feat(cartodiagram): fix for v6 + additional controls",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 9,
+  "approved": false
+ },
+ {
+  "number": 39740,
+  "title": "docs: Add Handlebars helper functions to README",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 39721,
+  "title": "fix(security): patch python-multipart, authlib, and pillow CVEs",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 39684,
+  "title": "feat(dashboard): select visible table columns on dashboards",
+  "assoc": "NONE",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 39683,
+  "title": "fix(query): align granularity with temporal x-axis and preserve secondary TEMPORAL_RANGE filters",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 39667,
+  "title": "fix(i18n): Add support for Traditional Chinese locale zh_TW in dayjs and update locale mappings",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 39656,
+  "title": "feat(ci): switch to `ubuntu-slim` runner image for faster startup time when running light CI workloads",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 39641,
+  "title": "perf(datasource-editor): fix typing lag and scrambling in form fields",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 9,
+  "approved": false
+ },
+ {
+  "number": 39586,
+  "title": "feat(dynamic plugins): migrate dynamic plugins to React",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 39434,
+  "title": "feat: Add GUI for label_colors in Dashboard Properties Modal",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 39430,
+  "title": "fix(deck.gl): scatterplot stops rendering points with empty value of categorical color",
+  "assoc": "MEMBER",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 39285,
+  "title": "feat: add high-DPI scale to chart image downloads",
+  "assoc": "MEMBER",
+  "reviews": 4,
+  "approved": true
+ },
+ {
+  "number": 39278,
+  "title": "chore: upgrade Flask to 3.x (with SQLAlchemy 1.4 compat)",
+  "assoc": "MEMBER",
+  "reviews": 9,
+  "approved": false
+ },
+ {
+  "number": 39257,
+  "title": "fix: increase dataset edit modal size (#38215)",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 39245,
+  "title": "fix(a11y): WCAG 3.3.1 \u2014 add error identification with role=alert and aria-describedby",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 27,
+  "approved": false
+ },
+ {
+  "number": 39241,
+  "title": "fix(a11y): WCAG 2.4.6 \u2014 add descriptive headings and section labels",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 13,
+  "approved": false
+ },
+ {
+  "number": 39240,
+  "title": "fix(a11y): WCAG 2.4.1 \u2014 add SkipLink component for keyboard bypass blocks",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 9,
+  "approved": false
+ },
+ {
+  "number": 39238,
+  "title": "fix(a11y): WCAG 1.4.11 \u2014 strengthen non-text contrast to 3:1 minimum",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 39236,
+  "title": "fix(a11y): WCAG 1.4.5 \u2014 switch ECharts from CanvasRenderer to SVGRenderer",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 7,
+  "approved": false
+ },
+ {
+  "number": 39234,
+  "title": "fix(a11y): WCAG 1.4.3 \u2014 enforce accessible link color contrast",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 10,
+  "approved": false
+ },
+ {
+  "number": 39232,
+  "title": "fix(a11y): WCAG 1.3.5 \u2014 add autocomplete attributes to form inputs",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 10,
+  "approved": false
+ },
+ {
+  "number": 39231,
+  "title": "fix(a11y): WCAG 1.3.3 \u2014 add aria-pressed/expanded to toggle buttons",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 21,
+  "approved": false
+ },
+ {
+  "number": 39230,
+  "title": "fix(a11y): WCAG 1.1.1 \u2014 add accessible names to charts, status icons, and icon buttons",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 14,
+  "approved": false
+ },
+ {
+  "number": 39162,
+  "title": "feat(databricks): add OAuth2 per-user impersonation for Databricks SQL warehouse",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 5,
+  "approved": false
+ },
+ {
+  "number": 38948,
+  "title": "chore(i18n): update Italian messages.po translations",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 38865,
+  "title": "feat(dashboard): add dynamic chart titles from native filters",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 8,
+  "approved": false
+ },
+ {
+  "number": 38791,
+  "title": "refactor(dashboard): modernize Filter Badge popover to AntD Menu",
+  "assoc": "NONE",
+  "reviews": 8,
+  "approved": false
+ },
+ {
+  "number": 38741,
+  "title": "fix(dashboard): normalize tooltip font size for published and favorit\u2026",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 38716,
+  "title": "fix(table-chart): support where for adhoc columns with server-side pagination",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 38691,
+  "title": "fix(reports): propagate force flag to dashboard permalink report URLs",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 38689,
+  "title": "fix(explore): prevent verbose_name from overriding column_name in filter resolution",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 7,
+  "approved": false
+ },
+ {
+  "number": 38677,
+  "title": "feat: add PDF export for Superset chart exports and introduce new PDF\u2026",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 38631,
+  "title": "fix(color): ensure createLinearScale always returns a color for null/NaN input",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 38451,
+  "title": "fix(mixed chart): respect truncate_metric setting for series names (#38190)",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 10,
+  "approved": false
+ },
+ {
+  "number": 38440,
+  "title": "fix(i18n): preserve locale territory in bootstrap data",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 38398,
+  "title": "feat(build): migrate to Vitest",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 38347,
+  "title": "fix(api): populate dashboard_id and slice_id in audit logs for mutation endpoints ",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 38266,
+  "title": "fix(translations): Add backend new translation and update existing ones",
+  "assoc": "NONE",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 38251,
+  "title": "feat(extensions): autogenerate fe and be contributions",
+  "assoc": "MEMBER",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 38126,
+  "title": "fix(echarts): correct time shift handling in Timeseries transformProps",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 38119,
+  "title": "fix(radar-chart): restrict label position options to valid polar coordinate values",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 38094,
+  "title": "fix(timetable): sort on time series columns correctly and do not convert null values \u200b\u200bto zero",
+  "assoc": "NONE",
+  "reviews": 7,
+  "approved": false
+ },
+ {
+  "number": 38086,
+  "title": "feat(explore-chart-panel): darken the color of vertical split for better recognizability",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 38069,
+  "title": "fix: Fix SupersetClient.postForm calls when SUPERSET_APP_ROOT defined",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 5,
+  "approved": false
+ },
+ {
+  "number": 38028,
+  "title": "feat(chart): h3 hexagon layer",
+  "assoc": "NONE",
+  "reviews": 6,
+  "approved": false
+ },
+ {
+  "number": 38019,
+  "title": "fix(chart): updates counties of kenya map",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": true
+ },
+ {
+  "number": 37929,
+  "title": "feat(dashboard): support create dashboard onboarding workflow",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 37809,
+  "title": "fix: Fail fast on async query websocket misconfiguration",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 37805,
+  "title": "feat/accessibility theme approach",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 37794,
+  "title": "feat(bignumber): add alignment control",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 37791,
+  "title": "feat(uploadDataModel): add DataPreviewModal for file upload preview and integrate driver.js for guided tours",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 37790,
+  "title": "feat: content localization for dashboards, charts, and filters",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 15,
+  "approved": false
+ },
+ {
+  "number": 37712,
+  "title": "fix(echarts-bar): make X-Axis Sort By consistent and functional with dimensions",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 8,
+  "approved": false
+ },
+ {
+  "number": 37679,
+  "title": "feat(dashboard): Dashboard Bulk Data Explorer",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 37517,
+  "title": "fix(charts): normalize server_page_length from string to number",
+  "assoc": "NONE",
+  "reviews": 5,
+  "approved": false
+ },
+ {
+  "number": 37479,
+  "title": "feat(dashboard-filters): Enable \"Select All\" for dynamic search filters",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 11,
+  "approved": true
+ },
+ {
+  "number": 37412,
+  "title": "fix(dashboard): Resolve drill by wrong column header text",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 16,
+  "approved": false
+ },
+ {
+  "number": 37396,
+  "title": "feat(explore): support column labels in DataTable headers",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 47,
+  "approved": false
+ },
+ {
+  "number": 37367,
+  "title": "fix(embedded): initialize feature flags in embedded dashboard entry point",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 37245,
+  "title": "fix(reports): ensure CSV attachments use UTF-8 BOM when encoding is utf-8-sig",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 37229,
+  "title": "fix(chart): Show metric label in tooltips",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 25,
+  "approved": false
+ },
+ {
+  "number": 37222,
+  "title": "build(dev-deps): replace monolithic Lerna with lightweight `@lerna-lite`",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": false
+ },
+ {
+  "number": 37141,
+  "title": "feat(mobile): Add mobile-friendly dashboard consumption mode",
+  "assoc": "MEMBER",
+  "reviews": 34,
+  "approved": false
+ },
+ {
+  "number": 37014,
+  "title": "fix: Apply timezone offset to convert local time boundaries to UTC",
+  "assoc": "NONE",
+  "reviews": 14,
+  "approved": true
+ },
+ {
+  "number": 36987,
+  "title": "feat: Added ability to run reports on demand ",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 12,
+  "approved": true
+ },
+ {
+  "number": 36857,
+  "title": "fix: disable recaptcha for LDAP authentication",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 6,
+  "approved": false
+ },
+ {
+  "number": 36772,
+  "title": "feat(explore): add interactive table query building with SQL visibility",
+  "assoc": "MEMBER",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 36708,
+  "title": "fix(dashboard): refresh chart with latest configuration from database",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 17,
+  "approved": false
+ },
+ {
+  "number": 36689,
+  "title": "feat: add timeseries range selection ",
+  "assoc": "MEMBER",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 36606,
+  "title": "fix(pivot-table): rename Subtotal to Aggregate ",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 36350,
+  "title": "fix(explore): stop button cancels running chart queries in the backend",
+  "assoc": "NONE",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 36349,
+  "title": "feat: add tooltip integration with glossary docs",
+  "assoc": "NONE",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 36345,
+  "title": "refactor: replace ListView with Ant Design ProTable",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 36214,
+  "title": "fix(timeseries): correct x-axis ordering for string and numeric-like dimensions",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 36094,
+  "title": "fix: When using Slack V2, file is changed to BytesIO",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": true
+ },
+ {
+  "number": 35867,
+  "title": "fix: drag a metric very quickly\uff0cthe order is chaotic.",
+  "assoc": "NONE",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 35832,
+  "title": "fix(alerts): implement Slack channel pagination to resolve timeout issues",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 41,
+  "approved": false
+ },
+ {
+  "number": 35754,
+  "title": "feat(embedded): Add setDataMask API method",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 3,
+  "approved": true
+ },
+ {
+  "number": 35613,
+  "title": "fix: Align Russian GeoJSON borders with internationally recognized boundaries",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": true
+ },
+ {
+  "number": 35541,
+  "title": "fix(tags): filter system tags and rename get_tag to get_or_create_tag",
+  "assoc": "MEMBER",
+  "reviews": 6,
+  "approved": true
+ },
+ {
+  "number": 35044,
+  "title": "docs: fixed typo in sso docs, fixed code style in sso docs",
+  "assoc": "NONE",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 35014,
+  "title": "feat(Charts): multi page pdf report",
+  "assoc": "NONE",
+  "reviews": 33,
+  "approved": false
+ },
+ {
+  "number": 34826,
+  "title": "feat: a manager for SQLAlchemy engines",
+  "assoc": "MEMBER",
+  "reviews": 14,
+  "approved": false
+ },
+ {
+  "number": 34785,
+  "title": "feat: allow drill-to-details to a specific chart (optionaly) configured at the dataset level",
+  "assoc": "MEMBER",
+  "reviews": 7,
+  "approved": false
+ },
+ {
+  "number": 34629,
+  "title": "feat: RTL Text Support",
+  "assoc": "NONE",
+  "reviews": 24,
+  "approved": false
+ },
+ {
+  "number": 33946,
+  "title": "feat: Remove charts from welcome page for users without access to edit charts",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 4,
+  "approved": false
+ },
+ {
+  "number": 33562,
+  "title": "feat(maps): Add Italy regions and autonomous provinces country map",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 33424,
+  "title": "feat(Embedding): Embeddable Charts as per SIP ",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 1,
+  "approved": false
+ },
+ {
+  "number": 33002,
+  "title": "feat: add bulk certify functionality to charts and dashboards",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 20,
+  "approved": false
+ },
+ {
+  "number": 32833,
+  "title": "chore(translations): Portuguese translation update",
+  "assoc": "NONE",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 32692,
+  "title": "feat(superset-frontend): Migrate from npm to pnpm and implement pnpm workspaces",
+  "assoc": "NONE",
+  "reviews": 0,
+  "approved": false
+ },
+ {
+  "number": 31981,
+  "title": "chore(i8n:spanish): complete-spanish-translations",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 2,
+  "approved": false
+ },
+ {
+  "number": 28627,
+  "title": "fix(engine): update databend engine spec for dialect version >=0.4.6",
+  "assoc": "CONTRIBUTOR",
+  "reviews": 9,
+  "approved": true
+ }
+]

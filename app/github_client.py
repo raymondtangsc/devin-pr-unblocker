@@ -18,10 +18,27 @@ import httpx
 
 API = "https://api.github.com"
 
-# GitHub's mergeable_state values we treat as "mechanically blocked".
-#   dirty    -> merge conflicts against the base branch
-#   unstable -> mergeable, but a required check is failing
-BLOCKED_STATES = {"dirty": "conflict", "unstable": "failing_ci"}
+# GitHub's mergeable_state values, and whether we can do anything about them.
+#
+# Measured across all 376 open PRs in apache/superset:
+#   blocked   58.2%  branch protection unsatisfied -- AMBIGUOUS, see below
+#   dirty     38.6%  merge conflicts
+#   unstable   1.9%  a non-required check is failing
+#   clean      1.3%  ready
+#   behind     0%    base moved and the repo requires up-to-date branches
+#
+# `blocked` is the largest bucket and cannot be classified from this field
+# alone: it covers both "waiting for a human to review" (which we must not
+# touch) and "a required check is red" (which is mechanical). Resolving it
+# needs the check runs -- see Orchestrator.classify.
+UNAMBIGUOUS_BLOCKERS = {
+    "dirty": "conflict",
+    "unstable": "failing_ci",
+    "behind": "stale_base",
+}
+
+# Check-run conclusions that mean a human has to intervene.
+FAILING_CONCLUSIONS = {"failure", "timed_out", "action_required", "startup_failure"}
 
 
 class GitHubSetupError(RuntimeError):
@@ -48,6 +65,7 @@ class PullRequest:
     head_ref: str
     base_ref: str
     html_url: str
+    head_sha: str = ""
     # GitHub's boolean verdict, distinct from the coarse mergeable_state string.
     # None while GitHub is still computing it.
     mergeable: bool | None = None
@@ -59,8 +77,17 @@ class PullRequest:
 
     @property
     def blocker(self) -> str | None:
-        """Why this PR cannot merge, or None if it is fine."""
-        return BLOCKED_STATES.get(self.mergeable_state)
+        """Why this PR cannot merge, when that is knowable from this field alone.
+
+        Returns None for `blocked`, which is genuinely ambiguous -- use
+        Orchestrator.classify, which consults the check runs.
+        """
+        return UNAMBIGUOUS_BLOCKERS.get(self.mergeable_state)
+
+    @property
+    def needs_check_inspection(self) -> bool:
+        """`blocked` could be a red required check or a missing human review."""
+        return self.mergeable_state == "blocked"
 
 
 class GitHubClient(Protocol):
@@ -70,6 +97,7 @@ class GitHubClient(Protocol):
         self, repo: str, title: str, body: str, labels: list[str]
     ) -> int: ...
     async def comment(self, repo: str, issue_number: int, body: str) -> None: ...
+    async def failing_checks(self, repo: str, sha: str) -> list[str]: ...
     @property
     def mode(self) -> str: ...
 
@@ -163,6 +191,29 @@ class LiveGitHubClient:
             )
             r.raise_for_status()
 
+    async def failing_checks(self, repo: str, sha: str) -> list[str]:
+        """Names of check runs that concluded in failure for this commit.
+
+        Used to tell a `blocked` PR waiting on a red check (mechanical, worth
+        dispatching) from one waiting on a human reviewer (not our business).
+        A pending check is not a failure -- it has not finished yet.
+        """
+        self._guard(repo)
+        if not sha:
+            return []
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.get(
+                f"{API}/repos/{repo}/commits/{sha}/check-runs",
+                headers=self._headers,
+                params={"per_page": 100},
+            )
+            r.raise_for_status()
+            return [
+                c.get("name", "?")
+                for c in r.json().get("check_runs", [])
+                if c.get("conclusion") in FAILING_CONCLUSIONS
+            ]
+
 
 class MockGitHubClient:
     """Serves PRs from a JSON fixture and records writes in memory.
@@ -180,6 +231,7 @@ class MockGitHubClient:
         self._prs = {
             p["number"]: _parse_pr(p) for p in json.loads(Path(path).read_text())
         }
+        self.failing_by_sha: dict[str, list[str]] = {}
         self.issues: list[dict[str, Any]] = []
         self.comments: list[dict[str, Any]] = []
         self._next_issue = 9000
@@ -221,6 +273,10 @@ class MockGitHubClient:
     async def comment(self, repo: str, issue_number: int, body: str) -> None:
         self.comments.append({"issue": issue_number, "body": body, "repo": repo})
 
+    async def failing_checks(self, repo: str, sha: str) -> list[str]:
+        # Fixture PRs keyed by head_sha; default to "no failures".
+        return list(self.failing_by_sha.get(sha, []))
+
 
 def _parse_pr(d: dict[str, Any]) -> PullRequest:
     user = d.get("user") or {}
@@ -238,6 +294,7 @@ def _parse_pr(d: dict[str, Any]) -> PullRequest:
         head_ref=str(head.get("ref", "")),
         base_ref=str(base.get("ref", "master")),
         html_url=str(d.get("html_url", "")),
+        head_sha=str(head.get("sha", "")),
     )
 
 

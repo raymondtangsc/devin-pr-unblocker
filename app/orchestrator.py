@@ -55,20 +55,61 @@ class Orchestrator:
         candidates = [pr for pr in prs if not pr.draft]
         hydrated = await self._hydrate(repo, candidates)
 
+        classified = await asyncio.gather(
+            *(self.classify(repo, pr) for pr in hydrated if not pr.draft)
+        )
         blocked = [
             (pr, blocker)
-            for pr in hydrated
-            if not pr.draft and (blocker := pr.blocker) is not None
+            for pr, blocker in zip([p for p in hydrated if not p.draft], classified)
+            if blocker is not None
         ]
         blocked.sort(key=lambda pair: pair[0].age_days, reverse=True)
 
+        awaiting_review = sum(
+            1
+            for pr, blocker in zip([p for p in hydrated if not p.draft], classified)
+            if blocker is None and pr.mergeable_state == "blocked"
+        )
         self.store.log(
             "detect",
-            f"scanned {len(prs)} open PRs, {len(blocked)} mechanically blocked",
+            f"scanned {len(prs)} open PRs, {len(blocked)} mechanically blocked, "
+            f"{awaiting_review} awaiting human review (skipped)",
             scanned=len(prs),
             blocked=len(blocked),
+            awaiting_review=awaiting_review,
         )
         return blocked
+
+    async def classify(self, repo: str, pr: PullRequest) -> str | None:
+        """Decide whether a PR is blocked on something mechanical.
+
+        `blocked` is 58% of Superset's open PRs and is genuinely ambiguous: it
+        covers both "a required check is red" (mechanical, ours) and "waiting
+        for a human to review" (not ours). GitHub does not distinguish them in
+        `mergeable_state`, so we look at the check runs.
+
+        Defaulting to "not ours" is deliberate. Dispatching an agent at a PR
+        that is merely waiting for a reviewer wastes money and, worse, implies
+        the tool is trying to route around code review.
+        """
+        if not pr.needs_check_inspection:
+            return pr.blocker
+
+        try:
+            failing = await self.github.failing_checks(repo, pr.head_sha)
+        except Exception as exc:
+            log.warning("could not read checks for PR #%s: %s", pr.number, exc)
+            return None  # cannot prove it is mechanical -> leave it alone
+
+        if failing:
+            self.store.log(
+                "classified",
+                f"PR #{pr.number} is blocked by failing checks: "
+                f"{', '.join(failing[:4])}",
+                pr_number=pr.number,
+            )
+            return "failing_ci"
+        return None  # blocked, but nothing red -> awaiting human review
 
     async def _hydrate(
         self, repo: str, prs: list[PullRequest], concurrency: int = 8
@@ -163,20 +204,22 @@ class Orchestrator:
             return item
 
         pr = await self.github.get_pr(repo, pr_number)
-        if pr.blocker is None:
-            self.store.set_state(
-                pr_number, st.SKIPPED, detail="PR is no longer blocked; nothing to do."
+        blocker = await self.classify(repo, pr)
+        if blocker is None:
+            reason = (
+                "PR is waiting on human review, not on mechanical work."
+                if pr.mergeable_state == "blocked"
+                else "PR is no longer blocked; nothing to do."
             )
-            self.store.log(
-                "skipped", f"PR #{pr_number} unblocked itself", pr_number=pr_number
-            )
+            self.store.set_state(pr_number, st.SKIPPED, detail=reason)
+            self.store.log("skipped", f"PR #{pr_number}: {reason}", pr_number=pr_number)
             return self.store.get(pr_number)
 
-        prompt = build_prompt(pr, repo, pr.blocker)
+        prompt = build_prompt(pr, repo, blocker)
         session = await self.devin.create_session(
             prompt,
             title=f"Unblock {repo}#{pr.number}",
-            tags=["pr-unblocker", f"blocker:{pr.blocker}", f"pr:{pr.number}"],
+            tags=["pr-unblocker", f"blocker:{blocker}", f"pr:{pr.number}"],
             max_acu=self.cfg.devin_max_acu,
         )
         self.store.set_dispatched(pr_number, session.session_id, session.url)
@@ -192,7 +235,7 @@ class Orchestrator:
                 repo,
                 item.issue_number,
                 f"Devin session started: {session.url}\n\n"
-                f"Blocker: `{pr.blocker}` · ACU ceiling: {self.cfg.devin_max_acu}",
+                f"Blocker: `{blocker}` · ACU ceiling: {self.cfg.devin_max_acu}",
             )
         return self.store.get(pr_number)
 
@@ -301,8 +344,15 @@ class Orchestrator:
             return True, ""
 
         if item.blocker == "failing_ci":
-            if pr.mergeable_state == "unstable":
-                return False, "checks are still failing"
+            if pr.mergeable_state in ("unstable", "blocked"):
+                failing = await self.github.failing_checks(item.repo, pr.head_sha)
+                if failing:
+                    return False, f"checks are still failing ({', '.join(failing[:3])})"
+            return True, ""
+
+        if item.blocker == "stale_base":
+            if pr.mergeable_state == "behind":
+                return False, "the branch is still behind the base"
             return True, ""
 
         return True, ""

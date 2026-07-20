@@ -439,3 +439,84 @@ def test_mock_pair_produces_verifiable_successes() -> None:
     assert m["succeeded"] > 0, "verified successes must be reachable in mock mode"
     assert m["failed"] > 0, "the failure path must still be exercised"
     assert 0 < m["success_rate"] < 1
+
+
+# ------------------------------------------------- blocked-state classification
+
+
+def _pr_in_state(gh: MockGitHubClient, number: int, state: str, sha: str = "sha1"):
+    from app.github_client import PullRequest
+
+    gh._prs[number] = PullRequest(
+        **{**gh._prs[number].__dict__, "mergeable_state": state, "head_sha": sha}
+    )
+    return gh._prs[number]
+
+
+def test_blocked_awaiting_review_is_not_dispatched() -> None:
+    """58% of Superset's open PRs are `blocked`, mostly waiting on a reviewer.
+
+    Dispatching an agent there wastes money and implies the tool is routing
+    around code review. No failing checks means not ours.
+    """
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    pr = _pr_in_state(gh, 28627, "blocked")
+    gh.failing_by_sha = {}  # nothing red
+
+    assert asyncio.run(orch.classify(FORK, pr)) is None
+
+
+def test_blocked_with_failing_check_is_dispatched() -> None:
+    """The same state, but a red check makes it mechanical and therefore ours."""
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    pr = _pr_in_state(gh, 28627, "blocked", sha="deadbeef")
+    gh.failing_by_sha = {"deadbeef": ["lint-check", "frontend-build"]}
+
+    assert asyncio.run(orch.classify(FORK, pr)) == "failing_ci"
+
+
+def test_unreadable_checks_default_to_not_ours() -> None:
+    """If we cannot prove a PR is mechanically blocked, leave it alone."""
+
+    class Broken(MockGitHubClient):
+        async def failing_checks(self, repo: str, sha: str) -> list[str]:
+            raise RuntimeError("api down")
+
+    gh = Broken()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    pr = _pr_in_state(gh, 28627, "blocked")
+    assert asyncio.run(orch.classify(FORK, pr)) is None
+
+
+def test_behind_is_treated_as_stale_base() -> None:
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    pr = _pr_in_state(gh, 28627, "behind")
+    assert asyncio.run(orch.classify(FORK, pr)) == "stale_base"
+
+
+def test_every_blocker_has_a_prompt_and_issue_body() -> None:
+    """A blocker with no prompt would KeyError at dispatch time, in production."""
+    from app.github_client import UNAMBIGUOUS_BLOCKERS
+    from app.prompts import build_issue_body, build_prompt
+
+    gh = MockGitHubClient()
+    pr = asyncio.run(gh.get_pr(FORK, 28627))
+    for blocker in set(UNAMBIGUOUS_BLOCKERS.values()) | {"failing_ci"}:
+        assert build_prompt(pr, FORK, blocker)
+        assert build_issue_body(pr, FORK, blocker, "devin-unblock")
+
+
+def test_dispatch_skips_pr_awaiting_review() -> None:
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    _pr_in_state(gh, 28627, "blocked")
+    orch.store.upsert_detected(
+        st.WorkItem(28627, FORK, "t", "a", "conflict", 9.0, st.DETECTED)
+    )
+    item = asyncio.run(orch.dispatch(FORK, 28627))
+    assert item.state == st.SKIPPED
+    assert "human review" in (item.detail or "")
+    assert item.session_id is None

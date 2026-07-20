@@ -77,9 +77,29 @@ What to do:
 """
 
 
+_STALE_BASE_TASK = """
+This pull request has no conflicts and no failing checks, but `{base_ref}` has
+moved on and the repository requires branches to be up to date before merging.
+
+Goal: `{head_ref}` sits directly on top of the current `{base_ref}`.
+
+What to do:
+1. Rebase `{head_ref}` onto the latest `{base_ref}`.
+2. This should be mechanical. If a conflict appears, resolve it on the merits,
+   preserving the contributor's intent -- never by discarding their change.
+3. Run the tests for the files this PR touches, to confirm the newer base did
+   not break the contributor's work in a way git could not see.
+4. Push to `{head_ref}` only.
+"""
+
+
 def build_prompt(pr: PullRequest, repo: str, blocker: str) -> str:
     """Assemble the session prompt for one blocked PR."""
-    task = _CONFLICT_TASK if blocker == "conflict" else _CI_TASK
+    task = {
+        "conflict": _CONFLICT_TASK,
+        "failing_ci": _CI_TASK,
+        "stale_base": _STALE_BASE_TASK,
+    }[blocker]
     fmt = {"head_ref": pr.head_ref, "base_ref": pr.base_ref}
 
     return f"""You are unblocking a stalled pull request in `{repo}`.
@@ -107,7 +127,9 @@ def build_issue_body(pr: PullRequest, repo: str, blocker: str, label: str) -> st
     """Body of the tracking issue filed for a blocked PR."""
     human = {
         "conflict": "Merge conflicts against the base branch (`mergeable_state: dirty`)",
-        "failing_ci": "A required check is failing (`mergeable_state: unstable`)",
+        "failing_ci": "A required check is failing",
+        "stale_base": "The base branch has moved and this branch must be brought "
+        "up to date (`mergeable_state: behind`)",
     }[blocker]
 
     return f"""### Blocked pull request
