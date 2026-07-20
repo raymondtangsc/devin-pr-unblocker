@@ -584,9 +584,11 @@
         <p><strong>Conflicts-only pilot.</strong> Label-gated dispatch, hard ACU budget,
         every rescue human-reviewed. The 145-equivalent in your backlog.</p></div>
       <div class="step"><span class="when">week 2</span>
-        <p><strong>CI repair + merge attribution.</strong> Turn on the second lane, and join
-        the sweep's snapshots to get <em>"this merge conflicted 11 open PRs"</em> — a
-        per-merge cost metric nobody has today.</p></div>
+        <p><strong>CI repair, and know <em>which</em> merge broke it.</strong> Turn on the
+        second lane. The sweep's snapshots bracket every merge, so we can name the commit
+        that conflicted a PR — which replaces the 3-day wait with an exact signal, and
+        hands Devin the other side's intent, so the fix lands with far more
+        confidence.</p></div>
       <div class="step"><span class="when">then</span>
         <p><strong>Same rail, more teammate jobs.</strong> The dispatch→verify→report loop is
         generic. Next candidate we already scoped: sweeping a known bug-class across 17 call
@@ -599,8 +601,10 @@
       Rolling this out is fast because building it was fast — everything you've seen took
       hours, not weeks. Day one: measure your repo, read-only — your own 62 percent number
       by the afternoon. Days two to five: conflicts-only pilot behind a label and a budget.
-      Week two: CI repair and merge attribution. Two weeks to a working teammate — and the
-      rail generalizes to any mechanical backlog. Thanks — questions welcome.
+      Week two: CI repair, plus attribution — knowing which merge conflicted a PR replaces
+      the staleness heuristic with an exact signal, and tells Devin what the other side was
+      trying to do. Two weeks to a working teammate — and the rail generalizes to any
+      mechanical backlog. Thanks — questions welcome.
     </div>
   </div>
 </section>
