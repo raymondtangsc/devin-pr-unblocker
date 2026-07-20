@@ -461,20 +461,28 @@
 <section class="beat">
   <div class="wrap">
     <div class="eyebrow"><span>How · beat 6</span><span class="t">3:10 – 3:45</span></div>
-    <h2>Three decisions in the code.</h2>
-    <div class="counters" style="max-width:52rem">
+    <h2>The architecture, in four decisions.</h2>
+    <div class="counters" style="max-width:54rem">
       <div class="counter"><span class="n">01</span>
-        <p><strong>No model where a query will do.</strong> Detection and classification are
-        deterministic API sweeps — <em class="hl">agent spend starts where judgment starts</em>,
-        not before.<span class="src">orchestrator.py · detect()</span></p></div>
+        <p><strong>Control plane vs. agent plane.</strong> The loop — detect, classify,
+        dispatch, verify — is a deterministic state machine in plain code. The agent gets
+        exactly <em class="hl">one box: the judgment step</em>. Agent failures can't corrupt
+        the loop.<span class="src">orchestrator.py — no model call anywhere in the control path</span></p></div>
       <div class="counter"><span class="n">02</span>
-        <p><strong>Refusal is a feature.</strong> If the system can't <em class="hl">prove</em> a
-        blocked PR is mechanical — checks unreadable, nothing red — it doesn't touch it.
-        The 137 review-bound PRs are skipped by this one rule.<span class="src">orchestrator.py · classify() → return None</span></p></div>
+        <p><strong>Level-triggered, not event-dependent.</strong> A scheduled sweep re-derives
+        the blocked set from repo state every cycle; webhooks only buy latency. A dropped
+        event costs <em class="hl">seconds, not coverage</em> — and it runs behind a firewall
+        with zero inbound surface.<span class="src">main.py · run_sweep() — reconciliation, the Kubernetes argument</span></p></div>
       <div class="counter"><span class="n">03</span>
-        <p><strong>An agent's report is a claim, not evidence.</strong> A success only counts
-        after re-fetching the PR from GitHub — the success rate measures
-        <em class="hl">results, not confidence</em>.<span class="src">orchestrator.py · _verify_unblocked()</span></p></div>
+        <p><strong>The agent is untrusted by design.</strong> Hard ACU budget per session;
+        can't <em class="hl">prove</em> a PR is mechanically blocked → never dispatched
+        (the 137 review-bound PRs); and a reported success only counts after re-checking
+        GitHub.<span class="src">classify() → return None · _verify_unblocked() · max_acu_limit</span></p></div>
+      <div class="counter"><span class="n">04</span>
+        <p><strong>Every action leaves a durable record.</strong> The tracking issue is the
+        work item, the spend gate, and the audit trail; every state transition is
+        timestamped. The dashboard is a <em class="hl">view of the architecture</em>, not a
+        bolt-on.<span class="src">store.py — state machine + event log behind the metrics</span></p></div>
     </div>
     <div class="guardline">also load-bearing: upstream repo hard-blocklisted · idempotent dispatch ·
       per-event dispatch cap · per-session ACU ceiling · pushes to the PR branch only</div>
