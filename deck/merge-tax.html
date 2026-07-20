@@ -1,0 +1,578 @@
+<title>The Merge Tax — hiring a teammate for mechanical PR work</title>
+
+<style>
+  :root {
+    --paper:#FAFBFC; --sunk:#F1F3F6; --card:#FFFFFF;
+    --ink:#10141C; --ink-2:#39424F; --ink-3:#6B7684; --rule:#DDE2E8;
+    --accent:#20A7C9; --accent-ink:#12708A;
+    --ok:#2E9E6B; --warn:#D9902B; --crit:#B02A37;
+    --note-bg:#FBF6E9; --note-edge:#D9902B;
+    --serif: ui-serif,"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans: system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0D1017; --sunk:#12161F; --card:#161B25;
+      --ink:#EDF0F4; --ink-2:#B3BCC8; --ink-3:#7E8794; --rule:#242C38;
+      --accent:#3EB8D6; --accent-ink:#6FD0E6;
+      --ok:#33A071; --warn:#C2801F; --crit:#C4444F;
+      --note-bg:#1C1A12; --note-edge:#C2801F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0D1017; --sunk:#12161F; --card:#161B25;
+    --ink:#EDF0F4; --ink-2:#B3BCC8; --ink-3:#7E8794; --rule:#242C38;
+    --accent:#3EB8D6; --accent-ink:#6FD0E6;
+    --ok:#33A071; --warn:#C2801F; --crit:#C4444F;
+    --note-bg:#1C1A12; --note-edge:#C2801F;
+  }
+  :root[data-theme="light"] {
+    --paper:#FAFBFC; --sunk:#F1F3F6; --card:#FFFFFF;
+    --ink:#10141C; --ink-2:#39424F; --ink-3:#6B7684; --rule:#DDE2E8;
+    --accent:#20A7C9; --accent-ink:#12708A;
+    --ok:#2E9E6B; --warn:#D9902B; --crit:#B02A37;
+    --note-bg:#FBF6E9; --note-edge:#D9902B;
+  }
+
+  body { background:var(--paper); color:var(--ink); font-family:var(--sans);
+         line-height:1.55; -webkit-font-smoothing:antialiased; }
+
+  /* pace bar */
+  #pace { position:fixed; top:0; left:0; height:3px; width:0;
+          background:var(--accent); z-index:10; }
+
+  .beat { min-height:100vh; display:flex; flex-direction:column;
+          justify-content:center; padding:4rem 0 3rem;
+          border-top:1px solid var(--rule); }
+  .beat:first-of-type { border-top:0; }
+  .wrap { width:min(62rem, 92vw); margin:0 auto; }
+
+  .eyebrow { font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+             text-transform:uppercase; color:var(--accent-ink);
+             margin-bottom:1.1rem; display:flex; gap:1rem; align-items:baseline; }
+  .eyebrow .t { color:var(--ink-3); letter-spacing:.08em; }
+  h1 { font-family:var(--serif); font-weight:600;
+       font-size:clamp(2.6rem,6.5vw,4.6rem); line-height:1.03;
+       letter-spacing:-.02em; text-wrap:balance; margin:0; }
+  h2 { font-family:var(--serif); font-weight:600;
+       font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.12;
+       letter-spacing:-.015em; text-wrap:balance; margin:0 0 1.1rem; }
+  p { margin:0 0 1rem; max-width:62ch; color:var(--ink-2);
+      font-size:1.02rem; }
+  p.lede { font-size:clamp(1.05rem,1.8vw,1.25rem); color:var(--ink); }
+  strong { color:var(--ink); font-weight:650; }
+  em.hl { font-style:normal; background:color-mix(in srgb,var(--accent) 16%,transparent);
+          padding:.05em .28em; border-radius:2px; }
+  code, .mono { font-family:var(--mono); font-size:.9em; }
+  .foot { font-size:.76rem; color:var(--ink-3); max-width:70ch;
+          margin-top:2rem; line-height:1.5; border-top:1px solid var(--rule);
+          padding-top:.7rem; }
+
+  /* speaker notes — hidden unless body.notes-on; toggle with N */
+  .notes { display:none; margin-top:1.6rem; background:var(--note-bg);
+           border-left:3px solid var(--note-edge); border-radius:0 6px 6px 0;
+           padding:.9rem 1.1rem; font-size:.86rem; color:var(--ink-2);
+           max-width:66ch; }
+  .notes .win { font-family:var(--mono); font-size:.72rem; color:var(--note-edge);
+                letter-spacing:.08em; display:block; margin-bottom:.35rem; }
+  body.notes-on .notes { display:block; }
+
+  /* ---------- beat 1 diagram ---------- */
+  .diverge { margin:2.2rem 0 .5rem; }
+  .diverge svg { width:100%; height:auto; display:block; }
+  .diverge .lbl { font-family:var(--mono); font-size:13px; fill:var(--ink-3); }
+  .diverge .lbl.hot { fill:var(--crit); }
+  .formula { font-family:var(--mono); font-size:clamp(.85rem,1.8vw,1.05rem);
+             color:var(--ink-2); background:var(--sunk); border-radius:6px;
+             padding:.8rem 1.1rem; display:inline-block; margin-top:1.2rem; }
+  .formula b { color:var(--crit); font-weight:650; }
+  @media (prefers-reduced-motion: no-preference) {
+    .diverge .dot { opacity:0; animation:pop .4s ease-out forwards; }
+    @keyframes pop { to { opacity:1; } }
+  }
+
+  /* ---------- stacked bar (beat 2) ---------- */
+  .bignum { font-family:var(--serif); font-size:clamp(4rem,11vw,7.5rem);
+            line-height:1; letter-spacing:-.03em; color:var(--crit); }
+  .bignum small { font-size:.35em; color:var(--ink-3); font-family:var(--sans);
+                  letter-spacing:0; }
+  .stack { display:flex; height:2.6rem; border-radius:5px; overflow:hidden;
+           gap:2px; background:var(--paper); margin:1.6rem 0 .6rem; }
+  .seg { display:flex; align-items:center; justify-content:center;
+         font-family:var(--mono); font-size:.78rem; color:#fff;
+         font-variant-numeric:tabular-nums; white-space:nowrap; min-width:2px; }
+  .legend { display:flex; flex-wrap:wrap; gap:1.2rem; font-size:.82rem;
+            color:var(--ink-2); margin-top:.4rem; }
+  .legend span { display:flex; align-items:center; gap:.45rem; }
+  .sw { width:.72rem; height:.72rem; border-radius:2px; flex:none; }
+
+  /* ---------- decay bars (beat 3) ---------- */
+  .objection { font-family:var(--serif); font-style:italic;
+               font-size:clamp(1.3rem,2.8vw,1.9rem); color:var(--ink);
+               border-left:3px solid var(--rule); padding-left:1.2rem;
+               margin:0 0 1.6rem; max-width:46ch; text-wrap:balance; }
+  .counters { display:grid; gap:.7rem; margin:1.4rem 0 2rem; }
+  .counter { display:grid; grid-template-columns:auto 1fr; gap:.85rem;
+             align-items:start; background:var(--card);
+             border:1px solid var(--rule); border-radius:6px;
+             padding:.85rem 1.05rem; }
+  .counter .n { font-family:var(--mono); font-size:.74rem; color:var(--accent-ink);
+                margin-top:.2rem; }
+  .counter p { margin:0; font-size:.92rem; }
+  .decay { display:grid; gap:.5rem; max-width:44rem; }
+  .drow { display:grid; grid-template-columns:7.5rem 1fr 3.2rem; gap:.8rem;
+          align-items:center; font-size:.84rem; }
+  .drow .k { text-align:right; color:var(--ink-2); }
+  .drow .k small { color:var(--ink-3); }
+  .dtrack { background:var(--sunk); border-radius:3px; height:1.35rem; }
+  .dbar { height:100%; border-radius:3px 4px 4px 3px; background:var(--ok); }
+  .dbar.loss { background:var(--crit); }
+  .drow .v { font-family:var(--mono); font-variant-numeric:tabular-nums;
+             color:var(--ink); }
+  .punch { font-family:var(--serif); font-size:clamp(1.2rem,2.4vw,1.6rem);
+           color:var(--ink); margin-top:1.8rem; text-wrap:balance; max-width:44ch; }
+
+  /* ---------- pipeline (beat 4) ---------- */
+  .pipewrap { overflow-x:auto; margin:2rem 0 1rem; padding-bottom:.5rem; }
+  .pipe { display:flex; align-items:center; gap:.5rem; min-width:56rem; }
+  .pnode { background:var(--card); border:1px solid var(--rule);
+           border-radius:6px; padding:.65rem .9rem; text-align:center; flex:none; }
+  .pnode b { display:block; font-size:.86rem; color:var(--ink); font-weight:640; }
+  .pnode span { font-size:.7rem; color:var(--ink-3); font-family:var(--mono); }
+  .pnode.agent { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .parrow { color:var(--ink-3); font-family:var(--mono); flex:none; }
+  .inlets { display:grid; gap:.45rem; flex:none; }
+  .inlets .pnode { padding:.45rem .8rem; }
+  .refuse { margin-top:1rem; display:flex; align-items:center; gap:.6rem;
+            font-size:.84rem; color:var(--ink-2); }
+  .refuse .tag { font-family:var(--mono); font-size:.7rem; color:var(--ink-3);
+                 background:var(--sunk); border-radius:3px; padding:.25rem .6rem; }
+  .scope { display:grid; grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
+           gap:1rem; margin-top:1.6rem; }
+  .scope > div { background:var(--card); border:1px solid var(--rule);
+                 border-radius:6px; padding:1rem 1.15rem; }
+  .scope h3 { margin:0 0 .5rem; font-family:var(--mono); font-size:.72rem;
+              letter-spacing:.12em; text-transform:uppercase; font-weight:500; }
+  .scope .yes h3 { color:var(--ok); } .scope .no h3 { color:var(--ink-3); }
+  .scope ul { margin:0; padding-left:1.1rem; font-size:.9rem; color:var(--ink-2); }
+  .scope li { margin-bottom:.3rem; }
+
+  /* ---------- demo (beat 5) ---------- */
+  .demosteps { counter-reset:step; display:grid;
+               grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));
+               gap:1rem; margin-top:2rem; }
+  .demosteps > div { counter-increment:step; background:var(--card);
+                     border:1px solid var(--rule); border-radius:6px;
+                     padding:1rem 1.1rem; position:relative; }
+  .demosteps > div::before { content:counter(step);
+      font-family:var(--mono); font-size:.72rem; color:var(--accent-ink);
+      border:1px solid var(--accent-ink); border-radius:50%;
+      width:1.5rem; height:1.5rem; display:inline-flex; align-items:center;
+      justify-content:center; margin-bottom:.55rem; }
+  .demosteps b { display:block; font-size:.92rem; margin-bottom:.25rem; }
+  .demosteps p { margin:0; font-size:.82rem; color:var(--ink-3); }
+  .cutline { font-family:var(--mono); font-size:.78rem; color:var(--ink-3);
+             border:1px dashed var(--rule); border-radius:6px;
+             padding:.7rem 1rem; margin-top:1.8rem; display:inline-block; }
+
+  /* ---------- code (beat 6) ---------- */
+  .snips { display:grid; gap:1.1rem; margin-top:1.8rem; }
+  .snip  { background:var(--card); border:1px solid var(--rule);
+           border-radius:6px; overflow:hidden; }
+  .snip header { padding:.6rem 1rem; border-bottom:1px solid var(--rule);
+                 display:flex; justify-content:space-between; gap:1rem;
+                 flex-wrap:wrap; align-items:baseline; }
+  .snip header b { font-size:.92rem; font-weight:640; }
+  .snip header span { font-family:var(--mono); font-size:.7rem; color:var(--ink-3); }
+  .snip pre { margin:0; padding:.85rem 1rem; overflow-x:auto;
+              background:var(--sunk); }
+  .snip code { font-size:.78rem; line-height:1.55; color:var(--ink-2);
+               display:block; white-space:pre; }
+  .snip code .c { color:var(--ink-3); font-style:italic; }
+  .snip code .k { color:var(--accent-ink); }
+  .snip code .s { color:var(--ok); }
+  .guardline { font-family:var(--mono); font-size:.76rem; color:var(--ink-3);
+               margin-top:1.1rem; }
+
+  /* ---------- why (beat 7) ---------- */
+  .whygrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));
+             gap:1.4rem; margin-top:1.8rem; }
+  .whygrid h3 { font-family:var(--serif); font-size:1.25rem; margin:0 0 .5rem; }
+  .whygrid p { font-size:.92rem; }
+  .norms { margin-top:1.6rem; display:grid; gap:.6rem; max-width:46rem; }
+  .norm { font-family:var(--serif); font-size:1.02rem; color:var(--ink);
+          border-left:3px solid var(--accent); padding:.45rem 0 .45rem 1rem; }
+  .norm small { display:block; font-family:var(--mono); font-size:.68rem;
+                color:var(--ink-3); font-style:normal; margin-top:.2rem; }
+
+  /* ---------- proof (beat 8) ---------- */
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+           gap:1px; background:var(--rule); border:1px solid var(--rule);
+           border-radius:6px; overflow:hidden; margin-top:1.8rem; }
+  .tile { background:var(--card); padding:1.15rem 1.2rem; }
+  .tile .n { font-family:var(--serif); font-size:2rem; line-height:1;
+             font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .tile .n.ok { color:var(--ok); }
+  .tile .l { font-size:.78rem; color:var(--ink-3); margin-top:.5rem; line-height:1.4; }
+
+  /* ---------- next (beat 9) ---------- */
+  .path { display:grid; gap:.6rem; margin-top:1.8rem; max-width:46rem; }
+  .step { display:grid; grid-template-columns:7.5rem 1fr; gap:1rem;
+          align-items:baseline; background:var(--card);
+          border:1px solid var(--rule); border-radius:6px; padding:.8rem 1rem; }
+  .step .when { font-family:var(--mono); font-size:.72rem; color:var(--accent-ink); }
+  .step p { margin:0; font-size:.9rem; }
+  .step strong { display:block; margin-bottom:.1rem; }
+
+  footer { padding:2.5rem 0 3.5rem; border-top:1px solid var(--rule);
+           font-size:.78rem; color:var(--ink-3); }
+</style>
+
+<div id="pace"></div>
+
+<!-- ============ 1 · HOOK ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>What · beat 1 of 9</span><span class="t">0:00 – 0:35</span></div>
+    <h1>Your pull requests are racing your main branch.<br>Most of them are losing.</h1>
+    <div class="diverge" role="img" aria-label="Diagram: main branch advancing with commits while a PR branch stands still; the gap between them widens and turns red">
+      <svg viewBox="0 0 800 260">
+        <polygon points="70,200 740,200 740,70" fill="var(--crit)" opacity="0.09"/>
+        <line x1="70" y1="200" x2="740" y2="70"  stroke="var(--accent)" stroke-width="2.5"/>
+        <line x1="70" y1="200" x2="740" y2="200" stroke="var(--ink-3)" stroke-width="2.5" stroke-dasharray="1 0"/>
+        <circle class="dot" cx="180" cy="179" r="5" fill="var(--accent)" style="animation-delay:.2s"/>
+        <circle class="dot" cx="290" cy="158" r="5" fill="var(--accent)" style="animation-delay:.6s"/>
+        <circle class="dot" cx="400" cy="136" r="5" fill="var(--accent)" style="animation-delay:1.0s"/>
+        <circle class="dot" cx="510" cy="115" r="5" fill="var(--accent)" style="animation-delay:1.4s"/>
+        <circle class="dot" cx="620" cy="93"  r="5" fill="var(--accent)" style="animation-delay:1.8s"/>
+        <circle cx="70" cy="200" r="6" fill="var(--ink)"/>
+        <circle cx="740" cy="200" r="6" fill="var(--ink-3)"/>
+        <text class="lbl" x="78" y="60">main — moving all day, every day</text>
+        <text class="lbl" x="560" y="228">your PR — waiting for review</text>
+        <text class="lbl hot" x="600" y="150">the gap = future conflicts</text>
+      </svg>
+    </div>
+    <span class="formula">P(stuck) &nbsp;≈&nbsp; <b>time open</b> × main churn × diff size</span>
+    <p style="margin-top:1.2rem">This is physics, not process failure. Every team that ships concurrently has it — the busier the repo, the worse the tax.</p>
+    <div class="notes"><span class="win">0:00 – 0:35 · ~55 words</span>
+      Every PR is a fork of history. While it waits for review, main keeps moving —
+      and every merge into main can conflict every open PR. That's not a process
+      failure, it's physics: probability of getting stuck is time-open times churn
+      times diff size. Today: what that tax costs, and the teammate we hired to pay it.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · SCALE ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>What · beat 2</span><span class="t">0:35 – 1:15</span></div>
+    <h2>We measured it — on a repo you can verify.</h2>
+    <p class="lede">Apache Superset: a hot, public codebase. <strong>3,121 commits in seven months, 349 authors,</strong> main moves ~7×/day. Big enough that the physics is impossible to miss.</p>
+    <div class="bignum">62%<small>&nbsp; of 376 open PRs can't merge — for mechanical reasons</small></div>
+    <div class="stack" role="img" aria-label="Stacked bar of 376 open PRs: 145 merge conflicts, 89 failing required checks, 137 awaiting human review, 5 ready">
+      <div class="seg" style="flex:145;background:var(--crit)">conflicts 145</div>
+      <div class="seg" style="flex:89;background:var(--warn)">red CI 89</div>
+      <div class="seg" style="flex:137;background:var(--ink-3)">awaiting review 137</div>
+      <div class="seg" style="flex:5;background:var(--ok)"></div>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--crit)"></i>merge conflicts — 145</span>
+      <span><i class="sw" style="background:var(--warn)"></i>failing required checks — 89</span>
+      <span><i class="sw" style="background:var(--ink-3)"></i>awaiting human review — 137</span>
+      <span><i class="sw" style="background:var(--ok)"></i>ready — 5</span>
+    </div>
+    <div class="foot">Measured 2026-07-20 across all 376 open PRs via the GitHub REST API
+      (mergeable_state per PR, check-runs per head commit, retried until computed).
+      Reproducible from a laptop in ~10 minutes — no vendor benchmarks anywhere in this deck.</div>
+    <div class="notes"><span class="win">0:35 – 1:15 · ~65 words</span>
+      We can't measure your repo, so we measured one anyone can verify: Apache
+      Superset — thirty-one hundred commits this year, 349 contributors. Of its 376
+      open PRs, 62 percent cannot merge for purely mechanical reasons: 145 have
+      merge conflicts, 89 have a failing required check. Only the grey band is
+      actually waiting on human judgment. Every number here reproduces from the
+      GitHub API.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · VALUE ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>What · beat 3</span><span class="t">1:15 – 1:55</span></div>
+    <p class="objection">“If nobody bothered to fix them… aren't they just not worth merging?”</p>
+    <div class="counters">
+      <div class="counter"><span class="n">01</span>
+        <p><strong>Red is unread, not rejected.</strong> Reviewer time is the scarcest
+        resource, so reviewers triage green-first. A conflicted PR never <em class="hl">enters</em>
+        the queue — nobody ever decided it wasn't wanted. Nobody saw it.</p></div>
+      <div class="counter"><span class="n">02</span>
+        <p><strong>The contributor's math stops working.</strong> For a small fix,
+        rebasing + diagnosing someone else's CI costs more than writing the patch did.
+        Rational contributors walk — so the filter kills <em class="hl">small-but-valuable</em> first.</p></div>
+      <div class="counter"><span class="n">03</span>
+        <p><strong>The data says they were wanted.</strong> 87% of human PRs that reach a
+        conclusion get merged. Merging is the <em class="hl">default outcome</em> — what changes
+        with time isn't merit, it's friction:</p></div>
+    </div>
+    <div class="decay" role="img" aria-label="Merge rate by time open: under 1 week 91%, 1 to 4 weeks 90%, 1 to 3 months 85%, 3 to 12 months 64%">
+      <div class="drow"><div class="k">&lt; 1 week <small>n=321</small></div><div class="dtrack"><div class="dbar" style="width:91%"></div></div><div class="v">91%</div></div>
+      <div class="drow"><div class="k">1–4 weeks <small>n=116</small></div><div class="dtrack"><div class="dbar" style="width:90%"></div></div><div class="v">90%</div></div>
+      <div class="drow"><div class="k">1–3 months <small>n=57</small></div><div class="dtrack"><div class="dbar" style="width:85%"></div></div><div class="v">85%</div></div>
+      <div class="drow"><div class="k">3–12 months <small>n=51</small></div><div class="dtrack"><div class="dbar loss" style="width:64%"></div></div><div class="v">64%</div></div>
+    </div>
+    <p class="punch">The process never rejects these PRs. It <strong>starves</strong> them —
+      on friction, not merit. In this one repo: <strong>≈ 39 finished, wanted PRs</strong> on
+      track to be lost.</p>
+    <div class="foot">Merge rates from the 800 most recently updated closed PRs
+      (550 human-authored). That sample skews recent, so true abandonment is likely worse.
+      Conflict rate triples between month one (17%) and month two (51%) — the decay and the
+      conflicts are the same phenomenon.</div>
+    <div class="notes"><span class="win">1:15 – 1:55 · ~70 words</span>
+      Fair objection: maybe stuck PRs just aren't worth merging. Three answers. Reviewers
+      triage green-first — a conflicted PR never enters the queue; red is unread, not
+      rejected. For a small fix, re-greening costs more than the patch did, so rational
+      contributors walk. And the data: 87 percent of concluded PRs merge. Merge rate decays
+      91 to 64 purely with time stuck. The process starves PRs on friction, not merit.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 · SOLUTION ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>How · beat 4</span><span class="t">1:55 – 2:20</span></div>
+    <h2>So we hired a teammate for exactly this work.</h2>
+    <p class="lede">Not a helper someone drives — a teammate that gets <strong>assigned</strong> the mechanical backlog and owns it end to end. Built on the Devin API.</p>
+    <div class="pipewrap">
+      <div class="pipe">
+        <div class="inlets">
+          <div class="pnode"><b>webhook</b><span>fast path</span></div>
+          <div class="pnode"><b>scheduled sweep</b><span>source of truth</span></div>
+        </div>
+        <span class="parrow">→</span>
+        <div class="pnode"><b>detect + classify</b><span>deterministic · no model</span></div>
+        <span class="parrow">→</span>
+        <div class="pnode"><b>tracking issue</b><span>audit trail + spend gate</span></div>
+        <span class="parrow">→</span>
+        <div class="pnode agent"><b>Devin session</b><span>one per PR · ACU-capped</span></div>
+        <span class="parrow">→</span>
+        <div class="pnode"><b>verify</b><span>against GitHub, not the agent</span></div>
+        <span class="parrow">→</span>
+        <div class="pnode"><b>dashboard</b><span>metrics + event log</span></div>
+      </div>
+    </div>
+    <div class="refuse"><span class="tag">refuse lane</span>
+      blocked but nothing red → <strong>137 PRs left for humans.</strong> Review is your job;
+      its job is making sure what you review is mergeable.</div>
+    <div class="scope">
+      <div class="yes"><h3>Assigned to the teammate</h3>
+        <ul><li>145 merge conflicts — rebase, resolve on the merits</li>
+            <li>89 failing required checks — diagnose the red job, fix it</li></ul></div>
+      <div class="no"><h3>Explicitly not its job</h3>
+        <ul><li>Reviewing, approving, or merging anything</li>
+            <li>The 137 PRs waiting on human judgment</li></ul></div>
+    </div>
+    <div class="foot">Trigger design: webhooks are edge-triggered and lossy — a dropped delivery
+      would mean a PR silently never gets rescued. The scheduled sweep re-derives the blocked
+      set from actual repo state every cycle, so a missed webhook costs latency, not coverage.</div>
+    <div class="notes"><span class="win">1:55 – 2:20 · ~55 words</span>
+      So we hired a teammate for exactly this work. Events come in two ways — webhooks for
+      speed, a scheduled sweep as the source of truth, because webhooks get dropped. Detection
+      is deterministic, no model. Each blocked PR gets a tracking issue, then one budget-capped
+      Devin session. And note the refuse lane: 137 PRs waiting on human review — it doesn't touch those.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · DEMO ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>How · beat 5 · demo</span><span class="t">2:20 – 3:10</span></div>
+    <h2>Watch it rescue a 404-day-old contribution.</h2>
+    <div class="demosteps">
+      <div><b>Issue labelled</b><p>The tracking issue gets <code>devin-unblock</code> —
+        the human approval gate for spend.</p></div>
+      <div><b>Session dispatched</b><p>One Devin session, hard ACU ceiling, scoped to the
+        PR's own branch. Nobody watches it work.</p></div>
+      <div><b>Conflict resolved</b><p>3-file conflict on a real contributor's map feature —
+        rebased preserving their intent, tests run.</p></div>
+      <div><b>Verified &amp; reported</b><p>GitHub re-checked: <code>dirty → mergeable</code>.
+        Verdict commented on the issue for the audit trail.</p></div>
+    </div>
+    <span class="cutline">⌘ cut to screen recording — live dashboard + Devin session + the PR flipping green</span>
+    <div class="foot">Demo PRs are real upstream contributions (apache/superset #33562, #34629 —
+      404 and 310 days old) replayed onto our fork with their genuine conflicts intact.
+      The conflicts Devin resolves are the ones that actually defeated these PRs upstream.</div>
+    <div class="notes"><span class="win">2:20 – 3:10 · demo VO, ~60 words</span>
+      This PR is a real contribution — Italy map regions, open 404 days upstream, dead on a
+      3-file conflict. I label the issue: that's the spend gate. A session spawns with a hard
+      ACU cap. Devin rebases, resolves preserving the contributor's intent, pushes. The system
+      re-checks GitHub — dirty becomes mergeable — and comments the verdict. Total wall time:
+      about nine minutes.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · ARCHITECTURE ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>How · beat 6</span><span class="t">3:10 – 3:45</span></div>
+    <h2>Three decisions in the code.</h2>
+    <div class="snips">
+      <div class="snip">
+        <header><b>No model where a query will do</b><span>orchestrator.py · detect()</span></header>
+        <pre><code><span class="c"># Detection is an API sweep + a dictionary lookup. No model call</span>
+<span class="c"># anywhere in this path — agent spend starts where judgment starts.</span>
+prs = <span class="k">await</span> self.github.list_open_prs(repo)
+hydrated = <span class="k">await</span> self._hydrate(repo, candidates)  <span class="c"># mergeable_state is lazy</span></code></pre>
+      </div>
+      <div class="snip">
+        <header><b>Refusal is a feature</b><span>orchestrator.py · classify()</span></header>
+        <pre><code><span class="k">try</span>:
+    failing = <span class="k">await</span> self.github.failing_checks(repo, pr.head_sha)
+<span class="k">except</span> Exception:
+    <span class="k">return</span> <span class="k">None</span>  <span class="c"># cannot PROVE it's mechanical -> leave it alone</span>
+<span class="k">if</span> failing:
+    <span class="k">return</span> <span class="s">"failing_ci"</span>
+<span class="k">return</span> <span class="k">None</span>      <span class="c"># blocked, nothing red -> a human's job, skip</span></code></pre>
+      </div>
+      <div class="snip">
+        <header><b>The agent's report is a claim, not evidence</b><span>orchestrator.py · reconcile()</span></header>
+        <pre><code><span class="k">if</span> state == SUCCEEDED:
+    verified, why = <span class="k">await</span> self._verify_unblocked(item)  <span class="c"># re-fetch from GitHub</span>
+    <span class="k">if not</span> verified:
+        state = FAILED  <span class="c"># success rate measures results, not confidence</span></code></pre>
+      </div>
+    </div>
+    <div class="guardline">also load-bearing: upstream repo hard-blocklisted · idempotent dispatch ·
+      per-event dispatch cap · per-session ACU ceiling · pushes to the PR branch only</div>
+    <div class="notes"><span class="win">3:10 – 3:45 · ~60 words</span>
+      Three decisions worth defending. Detection has no model in it — an API sweep; agent
+      spend starts where judgment starts. The classifier refuses by default: if we can't
+      prove a blocked PR is mechanical, we don't touch it — that's where the 137 skipped
+      PRs come from. And we never trust the agent's self-report: success is re-verified
+      against GitHub before it counts.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · WHY DEVIN ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>Why · beat 7</span><span class="t">3:45 – 4:15</span></div>
+    <h2>A teammate, not a helper.</h2>
+    <div class="whygrid">
+      <div><h3>Automated — nobody drives it</h3>
+        <p>Copilots assume a developer in the loop. Here there is no loop: the event fires,
+        a session spawns in its own environment, works, reports back, escalates when stuck.
+        The whole integration is <strong>one HTTP call</strong> —
+        <code>POST /sessions</code> with a prompt, budget, and structured-output contract.</p></div>
+      <div><h3>Customizable — the workflow is ours</h3>
+        <p>This isn't a “fix my PRs” button we adopted. We measured a specific problem and
+        built a specific flow — our detection rules, our classifier, our verification, our
+        guardrails — <strong>in hours, not a quarter</strong>. Devin is the engine;
+        the workflow is the product.</p></div>
+    </div>
+    <div class="norms">
+      <div class="norm">“Resolve each conflict on the merits — not ‘which side is newer’.”
+        <small>prompts.py — the teammate's onboarding doc</small></div>
+      <div class="norm">“Never make a check pass by weakening it.”
+        <small>prompts.py</small></div>
+      <div class="norm">“A truthful failure is worth far more than a green build that quietly dropped someone's work.”
+        <small>prompts.py</small></div>
+    </div>
+    <div class="notes"><span class="win">3:45 – 4:15 · ~60 words</span>
+      Why Devin? Two properties. Automated: nobody sits at a keyboard — event in, session
+      out, one HTTP call to integrate. And customizable: we didn't adopt a feature, we built
+      our own workflow around the engine in hours. This file is the proof — prompts.py is
+      an onboarding doc. Those are team norms we wrote, not vendor defaults. That's a
+      teammate, not a helper.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · PROOF ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>Observability · beat 8</span><span class="t">4:15 – 4:40</span></div>
+    <h2>How you'd know it's working.</h2>
+    <div class="tiles">
+      <div class="tile"><div class="n ok">2 / 2</div>
+        <div class="l">conflicts resolved &amp; independently verified in the live run —
+        404- and 310-day-old PRs now mergeable</div></div>
+      <div class="tile"><div class="n">100%</div>
+        <div class="l">verified success rate — checked against GitHub,
+        never the agent's self-report</div></div>
+      <div class="tile"><div class="n">~9 min</div>
+        <div class="l">median time-to-unblock, event to verified-mergeable</div></div>
+      <div class="tile"><div class="n">ACU / rescue</div>
+        <div class="l">cost per rescued PR — unit economics on the dashboard,
+        judged against the engineer-days already sunk in each PR</div></div>
+    </div>
+    <div class="foot">Every state transition is timestamped in the store; the dashboard and
+      <code>/metrics</code> expose live counts, the blocker mix, and a full audit log.
+      The mock demo deliberately escalates every 4th session — a demo where nothing fails
+      teaches you nothing about how failures surface.</div>
+    <div class="notes"><span class="win">4:15 – 4:40 · ~50 words</span>
+      Four numbers, on a live dashboard. In the real run: two for two — both decade-stuck
+      PRs verified mergeable, in about nine minutes each. Success only counts after we
+      re-check GitHub, so this rate measures results, not agent confidence. And every rescue
+      has a cost figure attached — ACUs per PR — so the program is judged on unit economics.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 · NEXT ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>When · beat 9</span><span class="t">4:40 – 5:00</span></div>
+    <h2>Start where the risk is zero.</h2>
+    <div class="path">
+      <div class="step"><span class="when">week 1</span>
+        <p><strong>Measure, read-only.</strong> Point the sweep at your repo. No sessions,
+        no writes — just your own blocked-PR number and what it's costing you.</p></div>
+      <div class="step"><span class="when">weeks 2–3</span>
+        <p><strong>Conflicts-only pilot.</strong> Label-gated dispatch, hard ACU budget,
+        every rescue human-reviewed. The 145-equivalent in your backlog.</p></div>
+      <div class="step"><span class="when">month 2</span>
+        <p><strong>Add CI repair.</strong> The classifier already separates red checks from
+        review-waits — turn on the second lane.</p></div>
+      <div class="step"><span class="when">then</span>
+        <p><strong>Same rail, more teammate jobs.</strong> The dispatch→verify→report loop is
+        generic. Next candidate we already scoped: sweeping a known bug-class across 17 call
+        sites — a weekend, not a project, once the rail exists.</p></div>
+    </div>
+    <div class="notes"><span class="win">4:40 – 5:00 · ~45 words</span>
+      Rolling this out is low-risk by construction. Week one: measure your repo, read-only —
+      you get your own 62 percent number for free. Then a conflicts-only pilot behind a label
+      and a budget. Then CI repair. And the rail generalizes: any mechanical backlog becomes
+      a teammate job. Thanks — questions welcome.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    All figures measured on apache/superset, 2026-07-20, via <code>git log</code> (8,000 commits)
+    and the GitHub REST API (376 open PRs, 800 closed PRs, per-commit check runs) —
+    reproducible with an API token in ~10 minutes. System: 40 tests, mock mode runs the full
+    pipeline offline. &nbsp;·&nbsp; Press <code>N</code> for speaker notes.
+  </div>
+</footer>
+
+<script>
+  // pace bar — scroll fraction against the 5:00 budget
+  const pace = document.getElementById('pace');
+  addEventListener('scroll', () => {
+    const h = document.documentElement;
+    pace.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+  }, { passive: true });
+
+  // N toggles speaker notes (keyboard-only: nothing visible on the recording)
+  addEventListener('keydown', (e) => {
+    if ((e.key === 'n' || e.key === 'N') && !e.metaKey && !e.ctrlKey && !e.altKey)
+      document.body.classList.toggle('notes-on');
+  });
+</script>
