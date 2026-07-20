@@ -65,8 +65,8 @@
   em.hl { font-style:normal; background:color-mix(in srgb,var(--accent) 16%,transparent);
           padding:.05em .28em; border-radius:2px; }
   code, .mono { font-family:var(--mono); font-size:.9em; }
-  .foot { font-size:.74rem; color:var(--ink-3); max-width:74ch;
-          margin-top:1.3rem; line-height:1.45; border-top:1px solid var(--rule);
+  .foot { font-size:.74rem; color:var(--ink-3); max-width:110ch;
+          margin-top:1.1rem; line-height:1.45; border-top:1px solid var(--rule);
           padding-top:.6rem; }
 
   /* speaker notes — hidden unless body.notes-on; toggle with N */
@@ -129,18 +129,18 @@
   .counter .n { font-family:var(--mono); font-size:.74rem; color:var(--accent-ink);
                 margin-top:.2rem; }
   .counter p { margin:0; font-size:.92rem; }
-  .decay { display:grid; gap:.5rem; max-width:44rem; }
+  .decay { display:grid; gap:.4rem; max-width:44rem; }
   .drow { display:grid; grid-template-columns:7.5rem 1fr 3.2rem; gap:.8rem;
           align-items:center; font-size:.84rem; }
   .drow .k { text-align:right; color:var(--ink-2); }
   .drow .k small { color:var(--ink-3); }
-  .dtrack { background:var(--sunk); border-radius:3px; height:1.35rem; }
+  .dtrack { background:var(--sunk); border-radius:3px; height:1.25rem; }
   .dbar { height:100%; border-radius:3px 4px 4px 3px; background:var(--ok); }
   .dbar.loss { background:var(--crit); }
   .drow .v { font-family:var(--mono); font-variant-numeric:tabular-nums;
              color:var(--ink); }
-  .punch { font-family:var(--serif); font-size:clamp(1.15rem,2.2vw,1.5rem);
-           color:var(--ink); margin-top:1.2rem; text-wrap:balance; max-width:52ch; }
+  .punch { font-family:var(--serif); font-size:clamp(1.1rem,2.1vw,1.4rem);
+           color:var(--ink); margin-top:1rem; text-wrap:balance; max-width:56ch; }
 
   /* ---------- pipeline (beat 4) ---------- */
   .pipewrap { overflow-x:auto; margin:1.6rem 0 .8rem; padding-bottom:.4rem; }
@@ -363,19 +363,20 @@
       <div class="drow"><div class="k">1–3 months <small>n=57</small></div><div class="dtrack"><div class="dbar" style="width:85%"></div></div><div class="v">85%</div></div>
       <div class="drow"><div class="k">3–12 months <small>n=51</small></div><div class="dtrack"><div class="dbar loss" style="width:64%"></div></div><div class="v">64%</div></div>
     </div>
-    <p class="punch">The process never rejects these PRs. It <strong>starves</strong> them —
-      on friction, not merit. In this one repo: <strong>≈ 39 finished, wanted PRs</strong> on
-      track to be lost.</p>
+    <p class="punch">The process never rejects these PRs — it <strong>starves</strong> them,
+      on friction, not merit. And the tax is paid either way: <strong>all 234</strong> need a
+      human to un-stick them, often more than once — and <strong>≈ 39 will never land
+      at all</strong>.</p>
     <div class="foot">Merge rates from the 800 most recently updated closed PRs
-      (550 human-authored). That sample skews recent, so true abandonment is likely worse.
-      Conflict rate triples between month one (17%) and month two (51%) — the decay and the
-      conflicts are the same phenomenon.</div>
+      (550 human-authored) — a sample that skews recent, so true abandonment is likely
+      worse. Conflict rate triples from month one (17%) to month two (51%).</div>
     <div class="notes"><span class="win">1:25 – 2:00 · ~70 words</span>
       Fair objection: maybe stuck PRs just aren't worth merging. Three answers. Reviewers
-      triage green-first — a conflicted PR never enters the queue; red is unread, not
-      rejected. For a small fix, re-greening costs more than the patch did, so rational
-      contributors walk. And the data: 87 percent of concluded PRs merge. Merge rate decays
-      91 to 64 purely with time stuck. The process starves PRs on friction, not merit.
+      triage green-first — red is unread, not rejected. For a small fix, re-greening costs
+      more than the patch did, so contributors walk. And the data: 87 percent of concluded
+      PRs merge; the rate decays 91 to 64 with time stuck. Either way you pay: humans must
+      un-stick all 234 — a PR fixed today can rot again next week — and about 39 never
+      land at all.
     </div>
   </div>
 </section>
