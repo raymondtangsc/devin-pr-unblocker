@@ -168,17 +168,9 @@ Superset already ran that experiment 1,486 times.
 
 ---
 
-## 6. Trigger design implications
+## 6. Trigger design — IMPLEMENTED
 
-Current implementation targets `dirty` + `unstable`. Corrections needed:
-
-- `unstable` is **1.9%** upstream — nearly dead weight; keep but don't feature it.
-- `blocked` (58%) is **unhandled and ambiguous**. It collapses *"waiting for a
-  human reviewer"* (must NOT touch) with *"a required check is red"*
-  (mechanical, should fix). `mergeable_state` alone cannot distinguish them —
-  must inspect check runs + review state.
-
-Target rule:
+Shipped in `Orchestrator.classify`. The rule:
 
 ```
 dirty                        -> dispatch (always mechanical)
