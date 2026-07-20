@@ -144,7 +144,6 @@ def create_app() -> FastAPI:
             modes=app.state.modes,
             repo=cfg.github_repo,
             label=cfg.trigger_label,
-            cfg_max_acu=cfg.devin_max_acu,
         )
 
     @app.post("/webhook/github")

@@ -103,27 +103,15 @@ def render_dashboard(
     modes: dict[str, str],
     repo: str,
     label: str,
-    cfg_max_acu: int = 10,
 ) -> str:
     rate = metrics.get("success_rate")
     rate_txt = f"{rate * 100:.0f}%" if rate is not None else "—"
     med = metrics.get("median_unblock_seconds")
     med_txt = _duration(med) if med else "—"
 
-    # ACU *consumption* is not reported by the API for these sessions, so it is
-    # not shown -- a tile reading 0.0 looks like a broken metric and invites a
-    # question we cannot answer. The ceiling is what this system actually
-    # enforces, so that is what is surfaced.
-    acu_txt = (
-        f"{metrics['total_acus']}"
-        if metrics.get("total_acus")
-        else f"\u2264{cfg_max_acu}"
-    )
-    acu_label = (
-        "ACUs consumed"
-        if metrics.get("total_acus")
-        else "ACU ceiling per PR (consumption not reported by API)"
-    )
+    # ACU consumption is not reported by the API for these sessions, so nothing
+    # ACU-shaped is shown: a column of zeroes reads as broken instrumentation.
+    # The per-session ceiling is enforced in config, not surfaced as a metric.
     tiles = [
         ("", metrics["total_tracked"], "PRs tracked"),
         ("", metrics["queued"], "queued — awaiting dispatch"),
@@ -132,7 +120,6 @@ def render_dashboard(
         ("crit", metrics["failed"], "need a human"),
         ("", rate_txt, "verified success rate"),
         ("", med_txt, "median time to unblock"),
-        ("", acu_txt, acu_label),
     ]
     tiles_html = "".join(
         f'<div class="tile"><div class="n {cls}">{html.escape(str(v))}</div>'
@@ -145,7 +132,7 @@ def render_dashboard(
         table = f"""<div class="tbl"><table>
 <thead><tr><th>PR</th><th>Title</th><th>Blocker</th>
 <th style="text-align:right">Age</th><th>State</th><th>Devin session</th>
-<th>Outcome</th><th style="text-align:right">ACU</th></tr></thead>
+<th>Outcome</th></tr></thead>
 <tbody>{rows}</tbody></table></div>"""
     else:
         table = (
@@ -216,7 +203,6 @@ def _row(i: WorkItem) -> str:
 <td><span class="pill {cls}">{html.escape(label)}</span></td>
 <td class="mono">{session}</td>
 <td class="detail">{detail}</td>
-<td class="num">{i.acus_consumed or ""}</td>
 </tr>"""
 
 
