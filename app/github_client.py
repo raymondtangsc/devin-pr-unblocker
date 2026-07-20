@@ -117,6 +117,7 @@ class GitHubClient(Protocol):
     async def comment(self, repo: str, issue_number: int, body: str) -> None: ...
     async def failing_checks(self, repo: str, sha: str) -> list[str]: ...
     async def head_committed_at(self, repo: str, sha: str) -> str: ...
+    async def branch_head_sha(self, repo: str, branch: str) -> str: ...
     @property
     def mode(self) -> str: ...
 
@@ -210,6 +211,16 @@ class LiveGitHubClient:
             )
             r.raise_for_status()
 
+    async def branch_head_sha(self, repo: str, branch: str) -> str:
+        """Head commit of a branch -- used to read master's own check status."""
+        self._guard(repo)
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.get(
+                f"{API}/repos/{repo}/branches/{branch}", headers=self._headers
+            )
+            r.raise_for_status()
+            return str(r.json()["commit"]["sha"])
+
     async def head_committed_at(self, repo: str, sha: str) -> str:
         """When the head commit was pushed -- the real 'is a human working' signal."""
         self._guard(repo)
@@ -264,6 +275,7 @@ class MockGitHubClient:
         }
         self.failing_by_sha: dict[str, list[str]] = {}
         self.pushed_by_sha: dict[str, str] = {}
+        self.master_sha = "master-sha"
         self.issues: list[dict[str, Any]] = []
         self.comments: list[dict[str, Any]] = []
         self._next_issue = 9000
@@ -311,6 +323,9 @@ class MockGitHubClient:
 
     async def head_committed_at(self, repo: str, sha: str) -> str:
         return self.pushed_by_sha.get(sha, "")
+
+    async def branch_head_sha(self, repo: str, branch: str) -> str:
+        return self.master_sha
 
 
 def _parse_pr(d: dict[str, Any]) -> PullRequest:

@@ -64,8 +64,22 @@ Most common failing checks: `pre-commit (current)` 23, `changes` 21,
     = 62% of all 376 open PRs are mechanically blocked
     = 137 (36%) genuinely await human review -> out of scope by design
 
+### **[CORRECTED]** Blocked vs actionable
+
+62% (234) are mechanically blocked, but the teammate does not touch all of them:
+
+    234 blocked
+    - 66 drafts (author still working)
+    - 15 outstanding CHANGES_REQUESTED
+    = 153 ACTIONABLE  (40% of all open PRs) -- 93 conflicts, 60 red CI
+
+Quote **62%** for the size of the problem and **153 / 40%** for what the system
+would work. Do not say "145 conflicts assigned" -- 43 of those are drafts and
+some carry change requests; the conflict lane is **93**.
+
 **Headline claim for the deck:** *62% of open PRs are blocked on mechanical
-work; 36% await a human reviewer and are deliberately untouched.*
+work; 153 are actionable today; 36% await a human reviewer and are deliberately
+untouched.*
 Do **not** say 86% (bad sample) or 39% (missed the blocked bucket).
 
 **Also corrected:** an earlier note called the CI path "dead weight at 1.9%".

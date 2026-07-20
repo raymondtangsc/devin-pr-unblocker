@@ -198,6 +198,11 @@ sensible default.
 - **Devin pushes to the PR branch only.** Never to `master`; never merges,
   approves, or closes.
 - **Drafts are skipped** — the author is still working.
+- **Checks already red on `master` are not chased** (`SKIP_WHEN_MASTER_RED`). If the
+  base branch fails a check, no work on a PR branch turns it green. The opposite
+  case — a check red on many PRs while `master` is green — means a rule moved and
+  each PR must adapt; that IS the work, and the fix repeats across them, so those
+  are dispatched normally.
 - **Quiet-period gate** (`MIN_QUIET_DAYS`, default 3): a PR with recent pushes
   or comments is someone's work in progress, not rot — force-pushing onto it
   would collide with the author's local branch. The system waits until the PR

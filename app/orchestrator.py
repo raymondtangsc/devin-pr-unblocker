@@ -69,7 +69,10 @@ class Orchestrator:
                 active=active,
             )
 
-        classified = await asyncio.gather(*(self.classify(repo, pr) for pr in quiet))
+        master_red = await self._broken_on_master(repo)
+        classified = await asyncio.gather(
+            *(self.classify(repo, pr, master_red) for pr in quiet)
+        )
         blocked = [
             (pr, blocker)
             for pr, blocker in zip(quiet, classified)
@@ -116,7 +119,35 @@ class Orchestrator:
         stamped_prs = await asyncio.gather(*(stamped(pr) for pr in prs))
         return [pr for pr in stamped_prs if pr.quiet_days >= self.cfg.min_quiet_days]
 
-    async def classify(self, repo: str, pr: PullRequest) -> str | None:
+    async def _broken_on_master(self, repo: str, base: str = "master") -> set[str]:
+        """Checks that are failing on the base branch itself.
+
+        These are broken for everyone: no work on a PR branch turns them green,
+        so PRs failing only these are not dispatched. The opposite case -- a
+        check red on many PRs while master is green -- means a rule moved and
+        each PR must adapt, which IS the work, and the fix repeats across them.
+        """
+        if not self.cfg.skip_when_master_red:
+            return set()
+        try:
+            sha = await self.github.branch_head_sha(repo, base)
+            broken = set(await self.github.failing_checks(repo, sha))
+        except Exception as exc:
+            log.warning("could not read %s check status: %s", base, exc)
+            return set()  # cannot prove master is broken -> treat PRs normally
+        if broken:
+            self.store.log(
+                "master_red",
+                f"{len(broken)} check(s) failing on {base} itself "
+                f"({', '.join(sorted(broken)[:3])}) -- PRs failing only these are "
+                "not dispatched; a human should fix the branch",
+                checks=sorted(broken),
+            )
+        return broken
+
+    async def classify(
+        self, repo: str, pr: PullRequest, master_red: set[str] | None = None
+    ) -> str | None:
         """Decide whether a PR is blocked on something mechanical.
 
         `blocked` is 58% of Superset's open PRs and is genuinely ambiguous: it
@@ -137,15 +168,27 @@ class Orchestrator:
             log.warning("could not read checks for PR #%s: %s", pr.number, exc)
             return None  # cannot prove it is mechanical -> leave it alone
 
-        if failing:
+        if not failing:
+            return None  # blocked, but nothing red -> awaiting human review
+
+        # Checks already failing on master are broken for everyone -- working the
+        # PR branch cannot fix them. Anything else is this PR's to adapt to.
+        own = [f for f in failing if f not in (master_red or set())]
+        if not own:
             self.store.log(
-                "classified",
-                f"PR #{pr.number} is blocked by failing checks: "
-                f"{', '.join(failing[:4])}",
+                "skipped_master_red",
+                f"PR #{pr.number} only fails checks that are red on master too "
+                f"({', '.join(failing[:3])}) -- fixing the branch cannot help",
                 pr_number=pr.number,
             )
-            return "failing_ci"
-        return None  # blocked, but nothing red -> awaiting human review
+            return None
+
+        self.store.log(
+            "classified",
+            f"PR #{pr.number} is blocked by failing checks: {', '.join(own[:4])}",
+            pr_number=pr.number,
+        )
+        return "failing_ci"
 
     async def _hydrate(
         self, repo: str, prs: list[PullRequest], concurrency: int = 8

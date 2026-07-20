@@ -36,6 +36,7 @@ def make_cfg(**over) -> Config:
         db_path=":memory:",
         poll_interval_seconds=0,
         min_quiet_days=2.0,
+        skip_when_master_red=True,
     )
     base.update(over)
     return Config(**base)
@@ -702,3 +703,86 @@ def test_quiet_gate_still_blocks_a_real_recent_push() -> None:
     orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
     blocked = asyncio.run(orch.detect(FORK))
     assert 28627 not in {pr.number for pr, _ in blocked}
+
+
+# ------------------------------------------- master-red vs PR-specific failures
+
+
+def _non_draft_numbers(gh: MockGitHubClient, count: int) -> list[int]:
+    """Fixture PR numbers that detection will actually consider (drafts are skipped)."""
+    prs = asyncio.run(gh.list_open_prs(FORK))
+    return [p.number for p in prs if not p.draft][:count]
+
+
+def _blocked_with_checks(gh: MockGitHubClient, mapping: dict[int, list[str]]) -> None:
+    """Put PRs in `blocked` state with the given failing checks."""
+    from app.github_client import PullRequest
+
+    for num, checks in mapping.items():
+        sha = f"sha{num}"
+        gh._prs[num] = PullRequest(
+            **{**gh._prs[num].__dict__, "mergeable_state": "blocked", "head_sha": sha}
+        )
+        gh.failing_by_sha[sha] = checks
+
+
+def test_check_red_on_master_is_not_dispatched() -> None:
+    """If master fails the same check, no work on the PR branch can turn it green."""
+    gh = MockGitHubClient()
+    nums = _non_draft_numbers(gh, 4)
+    _blocked_with_checks(gh, {n: ["test-postgres"] for n in nums})
+    gh.failing_by_sha["master-sha"] = ["test-postgres"]  # master is broken too
+
+    orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
+    found = {pr.number for pr, _ in asyncio.run(orch.detect(FORK))}
+    assert not (set(nums) & found), "PRs failing only master-red checks must be skipped"
+    kinds = [e["kind"] for e in orch.store.recent_events(50)]
+    assert "master_red" in kinds and "skipped_master_red" in kinds
+
+
+def test_rule_moved_under_many_prs_IS_dispatched() -> None:
+    """A linter bump reddens every PR while master stays green.
+
+    Each PR genuinely has to adapt, and the fix repeats -- that is the work,
+    not a reason to skip.
+    """
+    gh = MockGitHubClient()
+    nums = _non_draft_numbers(gh, 6)
+    _blocked_with_checks(gh, {n: ["pre-commit"] for n in nums})
+    gh.failing_by_sha["master-sha"] = []  # master is green
+
+    orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
+    found = {pr.number: b for pr, b in asyncio.run(orch.detect(FORK))}
+    assert set(nums) <= set(found), "every PR the moved rule reddened must be picked up"
+    assert all(found[n] == "failing_ci" for n in nums)
+
+
+def test_pr_own_failure_dispatched_even_when_master_red() -> None:
+    """Master being broken must not shield a PR's own separate breakage."""
+    gh = MockGitHubClient()
+    nums = _non_draft_numbers(gh, 4)
+    checks = {n: ["test-postgres"] for n in nums}
+    checks[nums[0]] = ["test-postgres", "unit-tests"]  # this PR also broke unit-tests
+    _blocked_with_checks(gh, checks)
+    gh.failing_by_sha["master-sha"] = ["test-postgres"]
+
+    orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
+    found = {pr.number for pr, _ in asyncio.run(orch.detect(FORK))}
+    assert nums[0] in found, "the PR's own broken check must still be dispatched"
+    assert not (set(nums[1:]) & found), "PRs failing only master-red checks are skipped"
+
+
+def test_unreadable_master_status_does_not_block_dispatch() -> None:
+    """If we cannot prove master is broken, treat PRs normally."""
+
+    class NoBranch(MockGitHubClient):
+        async def branch_head_sha(self, repo: str, branch: str) -> str:
+            raise RuntimeError("api down")
+
+    gh = NoBranch()
+    nums = _non_draft_numbers(gh, 3)
+    _blocked_with_checks(gh, {n: ["pre-commit"] for n in nums})
+
+    orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
+    found = {pr.number for pr, _ in asyncio.run(orch.detect(FORK))}
+    assert set(nums) <= found, "unprovable master state must not suppress dispatch"

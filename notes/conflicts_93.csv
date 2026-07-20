@@ -1,0 +1,94 @@
+pr,open_days,days_since_push,files,approved,author,title,url
+32833,482,432,1,False,igobranco,chore(translations): Portuguese translation update,https://github.com/apache/superset/pull/32833
+33424,432,425,30,False,amaannawab923,feat(Embedding): Embeddable Charts as per SIP ,https://github.com/apache/superset/pull/33424
+33946,388,23,3,False,martimors,feat: Remove charts from welcome page for users without access to edit charts,https://github.com/apache/superset/pull/33946
+34785,333,305,32,False,mistercrunch,feat: allow drill-to-details to a specific chart (optionaly) configured at the dataset level,https://github.com/apache/superset/pull/34785
+34826,331,69,21,False,betodealmeida,feat: a manager for SQLAlchemy engines,https://github.com/apache/superset/pull/34826
+35541,286,286,5,True,eschutho,fix(tags): filter system tags and rename get_tag to get_or_create_tag,https://github.com/apache/superset/pull/35541
+35613,280,278,2,False,dankor,fix: Align Russian GeoJSON borders with internationally recognized boundaries,https://github.com/apache/superset/pull/35613
+35754,272,124,6,False,gerbermichi,feat(embedded): Add setDataMask API method,https://github.com/apache/superset/pull/35754
+35832,268,242,15,False,gabotorresruiz,fix(alerts): implement Slack channel pagination to resolve timeout issues,https://github.com/apache/superset/pull/35832
+35867,264,9,9,False,CoderSxy,fix: drag a metric very quickly，the order is chaotic.,https://github.com/apache/superset/pull/35867
+36094,249,30,1,False,JaeGeunBang,"fix: When using Slack V2, file is changed to BytesIO",https://github.com/apache/superset/pull/36094
+36214,241,234,1,False,YousufFFFF,fix(timeseries): correct x-axis ordering for string and numeric-like dimensions,https://github.com/apache/superset/pull/36214
+36350,231,223,14,False,X-arshiya-X,fix(explore): stop button cancels running chart queries in the backend,https://github.com/apache/superset/pull/36350
+36606,217,118,1,False,nitishagar,fix(pivot-table): rename Subtotal to Aggregate ,https://github.com/apache/superset/pull/36606
+36708,214,158,13,False,FelipeGLopez,fix(dashboard): refresh chart with latest configuration from database,https://github.com/apache/superset/pull/36708
+36857,202,191,2,False,Khrol,fix: disable recaptcha for LDAP authentication,https://github.com/apache/superset/pull/36857
+37014,191,32,5,True,jayakarkatika,fix: Apply timezone offset to convert local time boundaries to UTC,https://github.com/apache/superset/pull/37014
+37229,183,13,7,False,reynoldmorel,fix(chart): Show metric label in tooltips,https://github.com/apache/superset/pull/37229
+37222,183,13,4,False,hainenber,build(dev-deps): replace monolithic Lerna with lightweight `@lerna-lite`,https://github.com/apache/superset/pull/37222
+37245,181,34,2,False,yayunn,fix(reports): ensure CSV attachments use UTF-8 BOM when encoding is utf-8-sig,https://github.com/apache/superset/pull/37245
+37367,178,18,2,False,YuriyKrasilnikov,fix(embedded): initialize feature flags in embedded dashboard entry point,https://github.com/apache/superset/pull/37367
+37396,177,23,18,False,semohr,feat(explore): support column labels in DataTable headers,https://github.com/apache/superset/pull/37396
+37412,176,26,11,False,reynoldmorel,fix(dashboard): Resolve drill by wrong column header text,https://github.com/apache/superset/pull/37412
+37517,172,171,2,False,VinayaKumar12,fix(charts): normalize server_page_length from string to number,https://github.com/apache/superset/pull/37517
+37679,165,153,8,False,FelipeGLopez,feat(dashboard): Dashboard Bulk Data Explorer,https://github.com/apache/superset/pull/37679
+37794,161,19,13,False,tiya-9975,feat(bignumber): add alignment control,https://github.com/apache/superset/pull/37794
+37791,161,161,9,False,LuisSanchez,feat(uploadDataModel): add DataPreviewModal for file upload preview and integrate driver.js for guided tours,https://github.com/apache/superset/pull/37791
+37790,161,150,220,False,YuriyKrasilnikov,"feat: content localization for dashboards, charts, and filters",https://github.com/apache/superset/pull/37790
+37809,160,160,2,False,jaymasiwal,fix: Fail fast on async query websocket misconfiguration,https://github.com/apache/superset/pull/37809
+37805,160,164,18,False,massucattoj,feat/accessibility theme approach,https://github.com/apache/superset/pull/37805
+38019,153,59,3,True,drzackyll,fix(chart): updates counties of kenya map,https://github.com/apache/superset/pull/38019
+38028,152,83,16,False,Boreto1213,feat(chart): h3 hexagon layer,https://github.com/apache/superset/pull/38028
+38086,151,151,3,False,hainenber,feat(explore-chart-panel): darken the color of vertical split for better recognizability,https://github.com/apache/superset/pull/38086
+38069,151,150,17,False,martyngigg,fix: Fix SupersetClient.postForm calls when SUPERSET_APP_ROOT defined,https://github.com/apache/superset/pull/38069
+38094,150,103,12,False,lucapazz,fix(timetable): sort on time series columns correctly and do not convert null values ​​to zero,https://github.com/apache/superset/pull/38094
+38126,149,148,3,False,YousufFFFF,fix(echarts): correct time shift handling in Timeseries transformProps,https://github.com/apache/superset/pull/38126
+38347,139,125,5,False,vikash7485,fix(api): populate dashboard_id and slice_id in audit logs for mutation endpoints ,https://github.com/apache/superset/pull/38347
+38451,136,14,3,False,MelikHajlawi,fix(mixed chart): respect truncate_metric setting for series names (#38190),https://github.com/apache/superset/pull/38451
+38440,136,136,1,False,kevin3274,fix(i18n): preserve locale territory in bootstrap data,https://github.com/apache/superset/pull/38440
+38677,125,108,27,False,ozguryuksel,feat: add PDF export for Superset chart exports and introduce new PDF…,https://github.com/apache/superset/pull/38677
+38691,124,114,3,False,ferjanin,fix(reports): propagate force flag to dashboard permalink report URLs,https://github.com/apache/superset/pull/38691
+38689,124,0,3,False,Mayankaggarwal8055,fix(explore): prevent verbose_name from overriding column_name in filter resolution,https://github.com/apache/superset/pull/38689
+38716,123,23,2,False,MallikarjunaReddyN,fix(table-chart): support where for adhoc columns with server-side pagination,https://github.com/apache/superset/pull/38716
+38791,119,21,3,False,hemasrishalini,refactor(dashboard): modernize Filter Badge popover to AntD Menu,https://github.com/apache/superset/pull/38791
+38865,116,102,33,False,joaopedroab,feat(dashboard): add dynamic chart titles from native filters,https://github.com/apache/superset/pull/38865
+38948,111,62,1,False,FrancescoCastaldi,chore(i18n): update Italian messages.po translations,https://github.com/apache/superset/pull/38948
+39162,103,102,5,False,gaurav7261,feat(databricks): add OAuth2 per-user impersonation for Databricks SQL warehouse,https://github.com/apache/superset/pull/39162
+39257,101,89,2,False,Vikash-Kumar-23,fix: increase dataset edit modal size (#38215),https://github.com/apache/superset/pull/39257
+39245,101,67,14,False,Aitema-gmbh,fix(a11y): WCAG 3.3.1 — add error identification with role=alert and aria-describedby,https://github.com/apache/superset/pull/39245
+39241,101,73,8,False,Aitema-gmbh,fix(a11y): WCAG 2.4.6 — add descriptive headings and section labels,https://github.com/apache/superset/pull/39241
+39240,101,73,6,False,Aitema-gmbh,fix(a11y): WCAG 2.4.1 — add SkipLink component for keyboard bypass blocks,https://github.com/apache/superset/pull/39240
+39238,101,101,5,False,Aitema-gmbh,fix(a11y): WCAG 1.4.11 — strengthen non-text contrast to 3:1 minimum,https://github.com/apache/superset/pull/39238
+39234,101,19,3,False,Aitema-gmbh,fix(a11y): WCAG 1.4.3 — enforce accessible link color contrast,https://github.com/apache/superset/pull/39234
+39232,101,48,7,False,Aitema-gmbh,fix(a11y): WCAG 1.3.5 — add autocomplete attributes to form inputs,https://github.com/apache/superset/pull/39232
+39231,101,73,7,False,Aitema-gmbh,fix(a11y): WCAG 1.3.3 — add aria-pressed/expanded to toggle buttons,https://github.com/apache/superset/pull/39231
+39230,101,73,13,False,Aitema-gmbh,"fix(a11y): WCAG 1.1.1 — add accessible names to charts, status icons, and icon buttons",https://github.com/apache/superset/pull/39230
+39278,100,89,29,False,dpgaspar,chore: upgrade Flask to 3.x (with SQLAlchemy 1.4 compat),https://github.com/apache/superset/pull/39278
+39434,93,86,8,False,jaymasiwal,feat: Add GUI for label_colors in Dashboard Properties Modal,https://github.com/apache/superset/pull/39434
+39586,87,87,7,False,mcdogg17,feat(dynamic plugins): migrate dynamic plugins to React,https://github.com/apache/superset/pull/39586
+39656,85,16,20,False,hainenber,feat(ci): switch to `ubuntu-slim` runner image for faster startup time when running light CI workloads,https://github.com/apache/superset/pull/39656
+39667,84,34,3,False,bestlong,fix(i18n): Add support for Traditional Chinese locale zh_TW in dayjs and update locale mappings,https://github.com/apache/superset/pull/39667
+39684,83,25,12,False,Aidin2005,feat(dashboard): select visible table columns on dashboards,https://github.com/apache/superset/pull/39684
+39683,83,67,4,False,ishimasar,fix(query): align granularity with temporal x-axis and preserve secondary TEMPORAL_RANGE filters,https://github.com/apache/superset/pull/39683
+39740,82,82,1,False,Monish-1109,docs: Add Handlebars helper functions to README,https://github.com/apache/superset/pull/39740
+39721,82,82,4,False,ASolarers-Rodriguez,"fix(security): patch python-multipart, authlib, and pillow CVEs",https://github.com/apache/superset/pull/39721
+39760,81,59,34,False,jansule,feat(cartodiagram): fix for v6 + additional controls,https://github.com/apache/superset/pull/39760
+39857,76,26,18,False,MallikarjunaReddyN,fix(export/import): Export Import annotation layers along with dashboard and chart export and import,https://github.com/apache/superset/pull/39857
+39894,75,24,4,False,jtjenkins,fix(native-filters): populate granularity_sqla from datasource main_dttm_col for time-range parent cascade,https://github.com/apache/superset/pull/39894
+39892,75,75,4,False,eschutho,fix(reports): narrow spinner checks to viewport and tighten exception handling,https://github.com/apache/superset/pull/39892
+39976,72,59,22,True,betodealmeida,feat: new splice RLSMethod,https://github.com/apache/superset/pull/39976
+40062,68,68,20,False,kasiazjc,fix(a11y): replace role=button anti-pattern with Button components,https://github.com/apache/superset/pull/40062
+40221,62,61,30,False,betodealmeida,feat(semantic-layers): containment-aware query cache,https://github.com/apache/superset/pull/40221
+40303,60,59,11,False,aminghadersohi,feat(mcp): add list and get tools for annotation layers and annotations,https://github.com/apache/superset/pull/40303
+40297,60,60,2,False,BansonVuong,fix(dashboard): prevent native filter Select dropdown from obscuring input on small screens,https://github.com/apache/superset/pull/40297
+40292,60,12,3,True,betodealmeida,fix(oauth2): idempotent OAuth2 completion and resilient listener,https://github.com/apache/superset/pull/40292
+40472,53,17,2,False,shivzen-pixel,fix(rbac): widen permissions dropdown in role form,https://github.com/apache/superset/pull/40472
+40498,52,46,2,False,dfgvaetyj3456356-hash,fix(security): validate Google Sheets URLs before SQL interpolation,https://github.com/apache/superset/pull/40498
+40803,44,24,6,True,Keonik1,feat(helm): Add annotations to secrets manifests,https://github.com/apache/superset/pull/40803
+40877,41,40,2,True,EricAraujoBsB,fix(urls): preserve repeated query parameters,https://github.com/apache/superset/pull/40877
+40907,40,40,20,False,ponichWebKnight,feat(chart): add server-side column sorting for table and drill-detail views,https://github.com/apache/superset/pull/40907
+41075,34,6,14,True,mikebridge,feat(versioning): version-history retention cleanup job,https://github.com/apache/superset/pull/41075
+41339,26,26,5,False,betodealmeida,fix(explore): prevent full table scan when SQL expression is used as x-axis,https://github.com/apache/superset/pull/41339
+41470,23,23,4,False,eschutho,fix(a11y): add aria-label to dashboard IconButton and unlabeled call sites,https://github.com/apache/superset/pull/41470
+41509,21,12,21,True,betodealmeida,feat(semantic layers): don't show samples tab in explore,https://github.com/apache/superset/pull/41509
+41549,20,5,19,True,mikebridge,feat(soft-delete): deletion-retention purge of soft-deleted entities,https://github.com/apache/superset/pull/41549
+41527,20,17,9,False,imddevaraj,feat(date-filter): add sub-hour time range presets (needs review),https://github.com/apache/superset/pull/41527
+41798,13,13,2,False,AdarshJ173,fix: show warning when table list is truncated in TableSelector,https://github.com/apache/superset/pull/41798
+41859,12,11,9,False,NHanser,fix(chart): restore opt-out numeric x-axis for bar and mixed charts,https://github.com/apache/superset/pull/41859
+42018,6,6,1,False,MallikarjunaReddyN,fix(dashboard): prevent result set overlap in mixed chart View as Table,https://github.com/apache/superset/pull/42018
+42046,5,5,4,False,jesperct,fix(explore): show the beginning date on time-series x-axis line charts,https://github.com/apache/superset/pull/42046
+42191,2,0,38,True,hainenber,chore(ci): upgrade GHA runner image to Ubuntu 26.04,https://github.com/apache/superset/pull/42191
+42190,2,2,30,False,hainenber,chore(build): remove legacy re-export shim used for development,https://github.com/apache/superset/pull/42190
+42137,2,2,1,True,J0s3-H3nr1qu3,fix(i18n): review and complete Portuguese (pt_PT) translation catalog,https://github.com/apache/superset/pull/42137

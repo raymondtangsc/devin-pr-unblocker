@@ -161,6 +161,22 @@
   .refuse.block .tag { margin-right:.55rem; }
   .refuse .tag { font-family:var(--mono); font-size:.7rem; color:var(--ink-3);
                  background:var(--sunk); border-radius:3px; padding:.25rem .6rem; }
+  .tax { width:100%; border-collapse:collapse; font-size:.88rem; margin-top:1.2rem; }
+  .tax th { font-family:var(--mono); font-size:.66rem; letter-spacing:.11em;
+            text-transform:uppercase; color:var(--ink-3); font-weight:500;
+            text-align:left; padding:.35rem .7rem; border-bottom:1px solid var(--rule); }
+  .tax td { padding:.42rem .7rem; border-bottom:1px solid var(--rule); color:var(--ink-2); }
+  .tax tr:last-child td { border-bottom:0; }
+  .tax td.n { font-family:var(--mono); font-variant-numeric:tabular-nums;
+              text-align:right; color:var(--ink); }
+  .tax td b { color:var(--ink); font-weight:640; }
+  .tax tr.live { background:color-mix(in srgb,var(--ok) 10%,transparent); }
+  .when { font-family:var(--mono); font-size:.68rem; padding:.16rem .5rem;
+          border-radius:3px; white-space:nowrap; }
+  .when.now { background:color-mix(in srgb,var(--ok) 18%,transparent); color:var(--ok); }
+  .when.next { background:color-mix(in srgb,var(--warn) 18%,transparent); color:var(--warn); }
+  .when.later { background:color-mix(in srgb,var(--accent) 15%,transparent); color:var(--accent-ink); }
+  .when.human { background:var(--sunk); color:var(--ink-3); }
   .scope { display:grid; grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
            gap:1rem; margin-top:1.6rem; }
   .scope > div { background:var(--card); border:1px solid var(--rule);
@@ -316,29 +332,35 @@
     data exploration and visualization platform. <strong>349 contributors</strong> in the
     last year, <strong>3,121 commits</strong> in 2026 so far, main moves ~7×/day —
     big and busy enough that the physics is impossible to miss.</p>
-    <div class="bignum">62%<small>&nbsp; of 376 open PRs can't merge — for mechanical reasons</small></div>
-    <div class="stack" role="img" aria-label="Stacked bar of 376 open PRs: 145 merge conflicts, 89 failing required checks, 137 awaiting human review, 5 ready">
-      <div class="seg" style="flex:145;background:var(--crit)">conflicts 145</div>
-      <div class="seg" style="flex:89;background:var(--warn)">red CI 89</div>
-      <div class="seg" style="flex:137;background:var(--ink-3)">awaiting review 137</div>
+    <div class="bignum">153<small>&nbsp; of 376 open PRs are stuck on work
+      <strong>no human should have to do</strong></small></div>
+    <div class="stack" role="img" aria-label="376 open PRs by what is blocking them: 93 merge conflicts, 60 failing CI, 15 changes requested, 66 drafts, 137 awaiting review, 5 ready">
+      <div class="seg" style="flex:93;background:var(--crit)">conflicts 93</div>
+      <div class="seg" style="flex:60;background:var(--warn)">red CI 60</div>
+      <div class="seg" style="flex:15;background:var(--c2)"></div>
+      <div class="seg" style="flex:66;background:var(--ink-3)">drafts 66</div>
+      <div class="seg" style="flex:137;background:#4a5462">awaiting review 137</div>
       <div class="seg" style="flex:5;background:var(--ok)"></div>
     </div>
     <div class="legend">
-      <span><i class="sw" style="background:var(--crit)"></i>merge conflicts — 145</span>
-      <span><i class="sw" style="background:var(--warn)"></i>failing required checks — 89</span>
-      <span><i class="sw" style="background:var(--ink-3)"></i>awaiting human review — 137</span>
+      <span><i class="sw" style="background:var(--crit)"></i>merge conflicts — 93</span>
+      <span><i class="sw" style="background:var(--warn)"></i>failing CI — 60</span>
+      <span><i class="sw" style="background:var(--c2)"></i>changes requested — 15</span>
+      <span><i class="sw" style="background:var(--ink-3)"></i>drafts — 66</span>
+      <span><i class="sw" style="background:#4a5462"></i>awaiting review — 137</span>
       <span><i class="sw" style="background:var(--ok)"></i>ready — 5</span>
     </div>
-    <div class="foot">Measured 2026-07-20 across all 376 open PRs via the GitHub REST API
-      (mergeable_state per PR, check-runs per head commit, retried until computed).
-      Reproducible from a laptop in ~10 minutes — no vendor benchmarks anywhere in this deck.</div>
-    <div class="notes"><span class="win">0:50 – 1:25 · ~65 words</span>
+    <div class="foot">The two hot bands are the mechanical ones — <strong>153 PRs</strong>
+      that cannot merge for reasons no engineer chose. Counting the drafts and
+      changes-requested PRs that are <em>also</em> conflicted, 234 (62%) are mechanically
+      blocked in total; 153 is the subset a teammate should touch. Measured 2026-07-20 across
+      all 376 open PRs via the GitHub REST API    <div class="notes"><span class="win">0:50 – 1:25 · ~65 words</span>
       This demo is built on Apache Superset — an open-source data exploration and
       visualization platform. Big and busy: 349 contributors in the last year,
-      thirty-one hundred commits in 2026 so far. We analyzed all 376 open pull
-      requests: 62 percent can't merge for mechanical reasons — 145 stuck on merge
-      conflicts, 89 on failing CI. Only the grey band waits on human judgment, and
-      every number reproduces from the GitHub API.
+      thirty-one hundred commits in 2026 so far. We analysed all 376 open pull requests
+      and sorted them by what's actually blocking each one. A hundred and fifty-three —
+      forty percent — are stuck on merge conflicts or failing CI. Work nobody chose,
+      that no human should have to do. Every number reproduces from the GitHub API.
     </div>
   </div>
 </section>
@@ -408,22 +430,30 @@
         <div class="pnode"><b>dashboard</b><span>metrics + audit log</span></div>
       </div>
     </div>
-    <div class="refuse"><span class="tag">refuse lane</span>
-      blocked but nothing red → <strong>137 PRs left for humans.</strong> Review is your job;
-      its job is making sure what you review is mergeable.</div>
-    <div class="refuse block"><span class="tag">phase 2</span>the <strong>89 red-CI
-      PRs</strong> are detected and classified, and the repair prompt is written — but that
-      lane is deliberately <strong>off</strong> for the pilot. Conflicts first, one lane at
-      a time.</div>
-    <div class="scope">
-      <div class="yes"><h3>Assigned today</h3>
-        <ul><li><strong>145 merge conflicts</strong> — rebase, resolve on the merits.
-            This is the lane running live.</li></ul></div>
-      <div class="no"><h3>Not its job</h3>
-        <ul><li>Reviewing, approving, or merging anything</li>
-            <li>The <strong>137 PRs</strong> waiting on human judgment</li>
-            <li>PRs pushed to in the last 3 days — someone's still working</li></ul></div>
-    </div>
+    <table class="tax">
+      <thead><tr><th>What's blocking it</th><th style="text-align:right">PRs</th>
+        <th>Who can clear it</th><th>Teammate</th></tr></thead>
+      <tbody>
+        <tr class="live"><td><b>Merge conflict</b></td><td class="n">93</td>
+          <td>mechanical — rebase, resolve on the merits</td>
+          <td><span class="when now">running now</span></td></tr>
+        <tr><td><b>Failing CI</b></td><td class="n">60</td>
+          <td>mechanical — diagnose the red job, fix it</td>
+          <td><span class="when next">phase 2</span></td></tr>
+        <tr><td><b>Changes requested</b></td><td class="n">15</td>
+          <td>a reviewer asked for something specific</td>
+          <td><span class="when later">could draft the fix</span></td></tr>
+        <tr><td><b>Draft</b></td><td class="n">66</td>
+          <td>the author is mid-work</td>
+          <td><span class="when human">opt-in only</span></td></tr>
+        <tr><td><b>Awaiting review</b></td><td class="n">137</td>
+          <td>needs a human judgment call</td>
+          <td><span class="when human">never</span></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:.9rem;font-size:.95rem"><strong>We picked the easiest lane first.</strong>
+      Review stays your job — the teammate's job is making sure that when you look,
+      the PR is actually mergeable.</p>
     <div class="foot">ACU = agent compute unit, Devin's metered unit of work — the budget
       lever: every session gets a hard ACU ceiling. Trigger design: discovery is sweep-only —
       the quiet gate deliberately waits days for a PR to go stale, so push-webhook seconds buy
@@ -432,9 +462,10 @@
       So we hired a teammate for exactly this work. Two ways in: a scheduled sweep that
       autonomously finds stale, unmergeable PRs — and one webhook, a human labeling a PR to
       ask for it now. Detection is deterministic, no model. Each blocked PR gets a tracking
-      issue, then one budget-capped Devin session. Two things it won't do: the 137 PRs waiting
-      on human review, and — for now — the 89 red-CI ones. That lane is built, but off. One
-      lane at a time.
+      issue, then one budget-capped Devin session. And here's every blocker in the repo, sized. Conflicts and red CI are
+      mechanical — that's 153 PRs. Fifteen have a reviewer asking for something specific;
+      Devin could draft those later. Sixty-six are drafts, and a hundred and thirty-seven
+      need human judgment — not ours. We deliberately picked the easiest lane to start.
     </div>
   </div>
 </section>
@@ -560,29 +591,32 @@
     <div class="eyebrow"><span>Observability · beat 8</span><span class="t">4:15 – 4:40</span></div>
     <h2>How you'd know it's working.</h2>
     <div class="tiles">
-      <div class="tile"><div class="n ok">2 / 2</div>
-        <div class="l">conflicts resolved &amp; independently verified in the live run —
-        404- and 310-day-old PRs now mergeable</div></div>
-      <div class="tile"><div class="n">100%</div>
-        <div class="l">verified success rate — checked against GitHub,
+      <div class="tile"><div class="n ok">3 / 4</div>
+        <div class="l">conflicts resolved and <strong>independently verified</strong> —
+        286- to 789-day-old PRs, now mergeable</div></div>
+      <div class="tile"><div class="n">75%</div>
+        <div class="l">verified success rate on the conflict lane — re-checked on GitHub,
         never the agent's self-report</div></div>
-      <div class="tile"><div class="n">~9 min</div>
-        <div class="l">median time-to-unblock, event to verified-mergeable</div></div>
-      <div class="tile"><div class="n">ACU / rescue</div>
-        <div class="l">cost per rescued PR — unit economics on the dashboard,
-        judged against the engineer-days already sunk in each PR</div></div>
+      <div class="tile"><div class="n">6 min</div>
+        <div class="l">median time from dispatch to verified-mergeable
+        <span class="mono">(5.1 · 6.1 · 12.2 min)</span></div></div>
+      <div class="tile"><div class="n">&le;10</div>
+        <div class="l">hard ACU ceiling per PR — spend is bounded before a session starts,
+        not discovered afterwards</div></div>
     </div>
     <div class="foot">All live evidence is the conflict lane; the CI-repair lane is built
       but deliberately off for the pilot, so nothing here claims it. Every state transition is
       timestamped in the store; the dashboard and
       <code>/metrics</code> expose live counts, the blocker mix, and a full audit log.
-      The mock demo deliberately escalates every 4th session — a demo where nothing fails
-      teaches you nothing about how failures surface.</div>
+      ACU <em>consumption</em> is not yet reported by the API for these sessions, so it is
+      not claimed here — the ceiling is what the system enforces, and actual spend comes
+      from the billing console.</div>
     <div class="notes"><span class="win">4:15 – 4:40 · ~50 words</span>
-      Four numbers, on a live dashboard. In the real run: two for two — both decade-stuck
-      PRs verified mergeable, in about nine minutes each. Success only counts after we
-      re-check GitHub, so this rate measures results, not agent confidence. And every rescue
-      has a cost figure attached — ACUs per PR — so the program is judged on unit economics.
+      Four numbers, live. Three of four conflicts resolved and verified — PRs stuck between
+      nine months and two years, cleared in about six minutes each. The fourth failed, and
+      the dashboard says so; that's the point of verifying against GitHub instead of trusting
+      the agent's own report. And spend is bounded before anything starts: a hard ACU ceiling
+      per PR, so this is budgeted work, not an open tab.
     </div>
   </div>
 </section>
@@ -599,7 +633,7 @@
         costing you.</p></div>
       <div class="step"><span class="when">days 2–5</span>
         <p><strong>Conflicts-only pilot.</strong> Label-gated dispatch, hard ACU budget,
-        every rescue human-reviewed. The 145-equivalent in your backlog.</p></div>
+        every rescue human-reviewed. The 93-equivalent in your backlog.</p></div>
       <div class="step"><span class="when">week 2</span>
         <p><strong>CI repair, and know <em>which</em> merge broke it.</strong> Turn on the
         second lane. The sweep's snapshots bracket every merge, so we can name the commit

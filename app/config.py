@@ -87,6 +87,14 @@ class Config:
     min_quiet_days: float = field(
         default_factory=lambda: float(_env("MIN_QUIET_DAYS", "3") or 3)
     )
+    # A check failing on `master` itself is broken for everyone: no amount of work
+    # on a PR branch turns it green, so those PRs are not dispatched. Checks that
+    # are red on many PRs while master is GREEN are the opposite case -- a rule
+    # moved and each PR must adapt -- which is exactly the work to dispatch, and
+    # the fix repeats. Set false only to dispatch regardless of master's state.
+    skip_when_master_red: bool = field(
+        default_factory=lambda: _env("SKIP_WHEN_MASTER_RED", "true").lower() != "false"
+    )
 
     @property
     def live_devin(self) -> bool:
