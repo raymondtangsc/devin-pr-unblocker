@@ -391,8 +391,8 @@
     <h2>What does PR rot cost?</h2>
     <div class="counters">
       <div class="counter"><span class="n">01</span>
-        <p><strong>The rework toll.</strong> All <strong>234</strong> blocked PRs need
-        engineering effort to un-stick — rebase, diagnose CI, re-green — <em class="hl">often
+        <p><strong>The rework toll.</strong> All <strong>153</strong> need engineering
+        effort to un-stick — rebase, diagnose CI, re-green — <em class="hl">often
         more than once</em>, because main keeps moving while they wait for review.</p></div>
       <div class="counter"><span class="n">02</span>
         <p><strong>“Weren't they just bad PRs?” No.</strong> 87% of human PRs that reach a
@@ -409,18 +409,20 @@
       <div class="drow"><div class="k">3–12 months <small>n=51</small></div><div class="dtrack"><div class="dbar loss" style="width:64%"></div></div><div class="v">64%</div></div>
     </div>
     <p class="punch">That's the <strong>merge tax</strong>: engineers paying again for work
-      already paid for — and <strong>≈ 39 improvements</strong> this codebase
+      already paid for — and <strong>≈ 41 improvements</strong> this codebase
       never gets.</p>
     <div class="foot">Merge rates from the 800 most recently updated closed PRs
       (550 human-authored) — a sample that skews recent, so true abandonment is likely
-      worse. Conflict rate triples from month one (17%) to month two (51%).</div>
+      worse. The ≈41 applies the 27-point decay to the 153; a further 81 PRs (drafts and
+      changes-requested) are also mechanically blocked, but those are their author's or
+      reviewer's to clear. Conflict rate triples from month one (17%) to month two (51%).</div>
     <div class="notes"><span class="win">1:25 – 2:00 · ~70 words</span>
-      So what does rot cost? Three things. All 234 blocked PRs need engineering effort
-      to un-stick — often more than once, because main keeps moving. And no, these
+      So what does rot cost? Three things. All hundred and fifty-three need engineering
+      effort to un-stick — often more than once, because main keeps moving. And no, these
       aren't junk: 87 percent of PRs that conclude get merged — red is unread, not
       rejected. Worst, the longer a PR stays stuck the likelier it dies: 91 percent
       falls to 64. That's the merge tax — paying again for work already paid for,
-      and about 39 improvements this codebase never gets.
+      and about forty improvements this codebase never gets.
     </div>
   </div>
 </section>
