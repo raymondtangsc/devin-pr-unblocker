@@ -53,7 +53,7 @@
              margin-bottom:1.1rem; display:flex; gap:1rem; align-items:baseline; }
   .eyebrow .t { color:var(--ink-3); letter-spacing:.08em; }
   h1 { font-family:var(--serif); font-weight:600;
-       font-size:clamp(2.1rem,4.6vw,3.5rem); line-height:1.06;
+       font-size:clamp(2rem,4.2vw,3.1rem); line-height:1.08;
        letter-spacing:-.02em; text-wrap:balance; margin:0; }
   h2 { font-family:var(--serif); font-weight:600;
        font-size:clamp(1.55rem,3vw,2.4rem); line-height:1.14;
@@ -65,9 +65,9 @@
   em.hl { font-style:normal; background:color-mix(in srgb,var(--accent) 16%,transparent);
           padding:.05em .28em; border-radius:2px; }
   code, .mono { font-family:var(--mono); font-size:.9em; }
-  .foot { font-size:.76rem; color:var(--ink-3); max-width:70ch;
-          margin-top:2rem; line-height:1.5; border-top:1px solid var(--rule);
-          padding-top:.7rem; }
+  .foot { font-size:.74rem; color:var(--ink-3); max-width:74ch;
+          margin-top:1.3rem; line-height:1.45; border-top:1px solid var(--rule);
+          padding-top:.6rem; }
 
   /* speaker notes — hidden unless body.notes-on; toggle with N */
   .notes { display:none; margin-top:1.6rem; background:var(--note-bg);
@@ -80,11 +80,11 @@
 
   /* ---------- beat 1 diagram ---------- */
   .diverge { margin:1.6rem 0 .4rem; }
-  .diverge svg { width:100%; height:auto; max-height:38vh; display:block;
+  .diverge svg { width:100%; height:auto; max-height:30vh; display:block;
                  margin:0 auto; }
   .diverge .lbl { font-family:var(--mono); font-size:13px; fill:var(--ink-3); }
   .diverge .lbl.hot { fill:var(--crit); }
-  .formula { font-family:var(--mono); font-size:clamp(.8rem,1.5vw,.98rem);
+  .formula { font-family:var(--mono); font-size:clamp(.78rem,1.4vw,.94rem);
              color:var(--ink-2); background:var(--sunk); border-radius:6px;
              padding:.8rem 1.1rem; display:inline-block; margin-top:1.2rem; }
   .formula b { color:var(--crit); font-weight:650; }
@@ -110,14 +110,14 @@
 
   /* ---------- decay bars (beat 3) ---------- */
   .objection { font-family:var(--serif); font-style:italic;
-               font-size:clamp(1.3rem,2.8vw,1.9rem); color:var(--ink);
+               font-size:clamp(1.2rem,2.4vw,1.7rem); color:var(--ink);
                border-left:3px solid var(--rule); padding-left:1.2rem;
-               margin:0 0 1.6rem; max-width:46ch; text-wrap:balance; }
-  .counters { display:grid; gap:.7rem; margin:1.4rem 0 2rem; }
+               margin:0 0 1rem; max-width:52ch; text-wrap:balance; }
+  .counters { display:grid; gap:.55rem; margin:1rem 0 1.3rem; }
   .counter { display:grid; grid-template-columns:auto 1fr; gap:.85rem;
              align-items:start; background:var(--card);
              border:1px solid var(--rule); border-radius:6px;
-             padding:.85rem 1.05rem; }
+             padding:.65rem 1rem; }
   .counter .n { font-family:var(--mono); font-size:.74rem; color:var(--accent-ink);
                 margin-top:.2rem; }
   .counter p { margin:0; font-size:.92rem; }
@@ -131,16 +131,18 @@
   .dbar.loss { background:var(--crit); }
   .drow .v { font-family:var(--mono); font-variant-numeric:tabular-nums;
              color:var(--ink); }
-  .punch { font-family:var(--serif); font-size:clamp(1.2rem,2.4vw,1.6rem);
-           color:var(--ink); margin-top:1.8rem; text-wrap:balance; max-width:44ch; }
+  .punch { font-family:var(--serif); font-size:clamp(1.15rem,2.2vw,1.5rem);
+           color:var(--ink); margin-top:1.2rem; text-wrap:balance; max-width:52ch; }
 
   /* ---------- pipeline (beat 4) ---------- */
-  .pipewrap { overflow-x:auto; margin:2rem 0 1rem; padding-bottom:.5rem; }
-  .pipe { display:flex; align-items:center; gap:.5rem; min-width:56rem; }
+  .pipewrap { overflow-x:auto; margin:1.6rem 0 .8rem; padding-bottom:.4rem; }
+  .pipe { display:flex; align-items:center; gap:.4rem; width:100%;
+          justify-content:space-between; min-width:46rem; }
   .pnode { background:var(--card); border:1px solid var(--rule);
-           border-radius:6px; padding:.65rem .9rem; text-align:center; flex:none; }
-  .pnode b { display:block; font-size:.86rem; color:var(--ink); font-weight:640; }
-  .pnode span { font-size:.7rem; color:var(--ink-3); font-family:var(--mono); }
+           border-radius:6px; padding:.5rem .6rem; text-align:center;
+           flex:1 1 auto; min-width:0; }
+  .pnode b { display:block; font-size:.76rem; color:var(--ink); font-weight:640; }
+  .pnode span { font-size:.6rem; color:var(--ink-3); font-family:var(--mono); }
   .pnode.agent { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
   .parrow { color:var(--ink-3); font-family:var(--mono); flex:none; }
   .inlets { display:grid; gap:.45rem; flex:none; }
@@ -255,7 +257,7 @@
       </svg>
     </div>
     <span class="formula">P(stuck) &nbsp;≈&nbsp; <b>time open</b> × main churn × diff size</span>
-    <p style="margin-top:1.2rem">This is physics, not process failure. Every team that ships concurrently has it — the busier the repo, the worse the tax.</p>
+    <p style="margin-top:.9rem;font-size:.92rem">Physics, not process failure — every team that ships concurrently pays this tax.</p>
     <div class="notes"><span class="win">0:00 – 0:35 · ~55 words</span>
       Every PR is a fork of history. While it waits for review, main keeps moving —
       and every merge into main can conflict every open PR. That's not a process
@@ -356,13 +358,13 @@
         <span class="parrow">→</span>
         <div class="pnode"><b>detect + classify</b><span>deterministic · no model</span></div>
         <span class="parrow">→</span>
-        <div class="pnode"><b>tracking issue</b><span>audit trail + spend gate</span></div>
+        <div class="pnode"><b>tracking issue</b><span>spend gate</span></div>
         <span class="parrow">→</span>
-        <div class="pnode agent"><b>Devin session</b><span>one per PR · ACU-capped</span></div>
+        <div class="pnode agent"><b>Devin session</b><span>1 per PR · ACU-capped</span></div>
         <span class="parrow">→</span>
-        <div class="pnode"><b>verify</b><span>against GitHub, not the agent</span></div>
+        <div class="pnode"><b>verify</b><span>re-checked on GitHub</span></div>
         <span class="parrow">→</span>
-        <div class="pnode"><b>dashboard</b><span>metrics + event log</span></div>
+        <div class="pnode"><b>dashboard</b><span>metrics + audit log</span></div>
       </div>
     </div>
     <div class="refuse"><span class="tag">refuse lane</span>
