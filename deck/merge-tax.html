@@ -77,10 +77,18 @@
   .notes .win { font-family:var(--mono); font-size:.72rem; color:var(--note-edge);
                 letter-spacing:.08em; display:block; margin-bottom:.35rem; }
   body.notes-on .notes { display:block; }
+  #notesbtn { position:fixed; right:.9rem; bottom:.9rem; z-index:11;
+              font-family:var(--mono); font-size:.7rem; letter-spacing:.06em;
+              color:var(--ink-3); background:var(--card);
+              border:1px solid var(--rule); border-radius:5px;
+              padding:.35rem .7rem; cursor:pointer; opacity:0;
+              transition:opacity .15s; }
+  #notesbtn:hover, #notesbtn:focus-visible,
+  body.notes-on #notesbtn { opacity:1; }
 
   /* ---------- beat 1 diagram ---------- */
   .diverge { margin:1.6rem 0 .4rem; }
-  .diverge svg { width:100%; height:auto; max-height:30vh; display:block;
+  .diverge svg { width:100%; height:auto; max-height:26vh; display:block;
                  margin:0 auto; }
   .diverge .lbl { font-family:var(--mono); font-size:13px; fill:var(--ink-3); }
   .diverge .lbl.hot { fill:var(--crit); }
@@ -233,12 +241,17 @@
 </style>
 
 <div id="pace"></div>
+<button id="notesbtn" type="button" aria-pressed="false">notes · N</button>
 
 <!-- ============ 1 · HOOK ============ -->
 <section class="beat">
   <div class="wrap">
     <div class="eyebrow"><span>What · beat 1 of 9</span><span class="t">0:00 – 0:35</span></div>
     <h1>Your pull requests are racing your main branch.<br>The longer they wait, the more of them lose.</h1>
+    <p class="lede" style="margin-top:1.1rem">While a PR waits for review, main keeps moving.
+    Past a point it <strong>can no longer merge</strong> — conflicts, broken checks — and the
+    finished work inside it starts to rot. Someone has to pay: <em class="hl">rebase it, fix it,
+    or lose it</em>.</p>
     <div class="diverge" role="img" aria-label="Diagram: main branch advancing with commits while a PR branch stands still; the gap between them widens and turns red">
       <svg viewBox="0 0 800 260">
         <polygon points="70,200 740,200 740,70" fill="var(--crit)" opacity="0.09"/>
@@ -256,14 +269,13 @@
         <text class="lbl hot" x="720" y="150" text-anchor="end">the gap = future conflicts</text>
       </svg>
     </div>
-    <span class="formula">P(stuck) &nbsp;≈&nbsp; <b>time open</b> × main churn × diff size</span>
-    <p style="margin-top:.9rem;font-size:.92rem">Physics, not process failure — every team that ships concurrently pays this tax.</p>
+    <span class="formula">P(stuck) &nbsp;≈&nbsp; <b>time open</b> × main churn × diff size
+      &nbsp;&nbsp;<span style="color:var(--ink-3)">— physics, not process failure. Every concurrent team pays it.</span></span>
     <div class="notes"><span class="win">0:00 – 0:35 · ~55 words</span>
-      Every PR is a fork of history. While it waits for review, main keeps moving —
-      and every merge into main can conflict every open PR. That's not a process
-      failure, it's physics: probability of getting stuck is time-open times churn
-      times diff size. How bad does it get? We measured it — and the teammate we
-      hired to pay the tax.
+      Here's the problem in one sentence: while a pull request waits for review, main
+      keeps moving — and past a point the PR can't merge any more. Conflicts, broken
+      checks. Finished work, rotting in the queue. Someone pays: rebase it, fix it, or
+      lose it. That's physics, not process — and we measured exactly what it costs.
     </div>
   </div>
 </section>
@@ -574,9 +586,16 @@ hydrated = <span class="k">await</span> self._hydrate(repo, candidates)  <span c
     pace.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
   }, { passive: true });
 
-  // N toggles speaker notes (keyboard-only: nothing visible on the recording)
+  // Speaker notes: N key, the hover-reveal corner button, or open with #notes.
+  // The button sits at opacity 0 until hovered, so it cannot leak into a recording.
+  const toggleNotes = () => {
+    const on = document.body.classList.toggle('notes-on');
+    document.getElementById('notesbtn').setAttribute('aria-pressed', String(on));
+  };
   addEventListener('keydown', (e) => {
     if ((e.key === 'n' || e.key === 'N') && !e.metaKey && !e.ctrlKey && !e.altKey)
-      document.body.classList.toggle('notes-on');
+      toggleNotes();
   });
+  document.getElementById('notesbtn').addEventListener('click', toggleNotes);
+  if (location.hash === '#notes') toggleNotes();
 </script>
