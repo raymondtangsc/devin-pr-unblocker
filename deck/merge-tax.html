@@ -43,7 +43,7 @@
           background:var(--accent); z-index:10; }
 
   .beat { min-height:100vh; display:flex; flex-direction:column;
-          justify-content:center; padding:4rem 0 3rem;
+          justify-content:center; padding:2.5rem 0 2rem;
           border-top:1px solid var(--rule); }
   .beat:first-of-type { border-top:0; }
   .wrap { width:min(62rem, 92vw); margin:0 auto; }
@@ -53,10 +53,10 @@
              margin-bottom:1.1rem; display:flex; gap:1rem; align-items:baseline; }
   .eyebrow .t { color:var(--ink-3); letter-spacing:.08em; }
   h1 { font-family:var(--serif); font-weight:600;
-       font-size:clamp(2.6rem,6.5vw,4.6rem); line-height:1.03;
+       font-size:clamp(2.1rem,4.6vw,3.5rem); line-height:1.06;
        letter-spacing:-.02em; text-wrap:balance; margin:0; }
   h2 { font-family:var(--serif); font-weight:600;
-       font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.12;
+       font-size:clamp(1.55rem,3vw,2.4rem); line-height:1.14;
        letter-spacing:-.015em; text-wrap:balance; margin:0 0 1.1rem; }
   p { margin:0 0 1rem; max-width:62ch; color:var(--ink-2);
       font-size:1.02rem; }
@@ -79,11 +79,12 @@
   body.notes-on .notes { display:block; }
 
   /* ---------- beat 1 diagram ---------- */
-  .diverge { margin:2.2rem 0 .5rem; }
-  .diverge svg { width:100%; height:auto; display:block; }
+  .diverge { margin:1.6rem 0 .4rem; }
+  .diverge svg { width:100%; height:auto; max-height:38vh; display:block;
+                 margin:0 auto; }
   .diverge .lbl { font-family:var(--mono); font-size:13px; fill:var(--ink-3); }
   .diverge .lbl.hot { fill:var(--crit); }
-  .formula { font-family:var(--mono); font-size:clamp(.85rem,1.8vw,1.05rem);
+  .formula { font-family:var(--mono); font-size:clamp(.8rem,1.5vw,.98rem);
              color:var(--ink-2); background:var(--sunk); border-radius:6px;
              padding:.8rem 1.1rem; display:inline-block; margin-top:1.2rem; }
   .formula b { color:var(--crit); font-weight:650; }
@@ -93,7 +94,7 @@
   }
 
   /* ---------- stacked bar (beat 2) ---------- */
-  .bignum { font-family:var(--serif); font-size:clamp(4rem,11vw,7.5rem);
+  .bignum { font-family:var(--serif); font-size:clamp(3.2rem,8vw,5.8rem);
             line-height:1; letter-spacing:-.03em; color:var(--crit); }
   .bignum small { font-size:.35em; color:var(--ink-3); font-family:var(--sans);
                   letter-spacing:0; }
@@ -249,8 +250,8 @@
         <circle cx="70" cy="200" r="6" fill="var(--ink)"/>
         <circle cx="740" cy="200" r="6" fill="var(--ink-3)"/>
         <text class="lbl" x="78" y="60">main — moving all day, every day</text>
-        <text class="lbl" x="560" y="228">your PR — waiting for review</text>
-        <text class="lbl hot" x="600" y="150">the gap = future conflicts</text>
+        <text class="lbl" x="720" y="232" text-anchor="end">your PR — waiting for review</text>
+        <text class="lbl hot" x="720" y="150" text-anchor="end">the gap = future conflicts</text>
       </svg>
     </div>
     <span class="formula">P(stuck) &nbsp;≈&nbsp; <b>time open</b> × main churn × diff size</span>
