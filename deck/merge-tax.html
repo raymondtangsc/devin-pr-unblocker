@@ -416,9 +416,11 @@
         <ul><li>Reviewing, approving, or merging anything</li>
             <li>The 137 PRs waiting on human judgment</li></ul></div>
     </div>
-    <div class="foot">Trigger design: webhooks are edge-triggered and lossy — a dropped delivery
-      would mean a PR silently never gets rescued. The scheduled sweep re-derives the blocked
-      set from actual repo state every cycle, so a missed webhook costs latency, not coverage.</div>
+    <div class="foot">ACU = agent compute unit, Devin's metered unit of work — the budget
+      lever: every session gets a hard ACU ceiling. Trigger design: webhooks are edge-triggered
+      and lossy — a dropped delivery would mean a PR silently never rescued. The scheduled sweep
+      re-derives the blocked set from repo state every cycle, so a missed webhook costs latency,
+      not coverage.</div>
     <div class="notes"><span class="win">2:00 – 2:25 · ~55 words</span>
       So we hired a teammate for exactly this work. Events come in two ways — webhooks for
       speed, a scheduled sweep as the source of truth, because webhooks get dropped. Detection
