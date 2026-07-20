@@ -186,6 +186,14 @@ class Store:
         )
         self._conn.commit()
 
+    def set_issue_number(self, pr_number: int, issue_number: int) -> None:
+        """Re-point a work item at a different issue, leaving its state alone."""
+        self._conn.execute(
+            "UPDATE work_items SET issue_number = ? WHERE pr_number = ?",
+            (issue_number, pr_number),
+        )
+        self._conn.commit()
+
     def set_dispatched(self, pr_number: int, session_id: str, session_url: str) -> None:
         self._conn.execute(
             """UPDATE work_items

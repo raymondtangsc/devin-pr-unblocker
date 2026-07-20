@@ -351,14 +351,66 @@ class Orchestrator:
             session=session.session_id,
         )
 
-        if item.issue_number:
-            await self.github.comment(
-                repo,
-                item.issue_number,
-                f"Devin session started: {session.url}\n\n"
-                f"Blocker: `{blocker}` · ACU ceiling: {self.cfg.devin_max_acu}",
-            )
+        # The session is the work; the comment is a courtesy. A failed comment
+        # must never discard a session that is already running -- that orphans
+        # real, billed work and reports a false failure.
+        await self._comment_safely(
+            repo,
+            pr_number,
+            f"Devin session started: {session.url}\n\n"
+            f"Blocker: `{blocker}` · ACU ceiling: {self.cfg.devin_max_acu}",
+        )
         return self.store.get(pr_number)
+
+    async def _comment_safely(self, repo: str, pr_number: int, body: str) -> None:
+        """Comment on a PR's tracking issue, never raising.
+
+        Self-heals a stale issue reference: issues can be closed, deleted, or
+        recreated out from under us, so on failure we re-resolve the tracking
+        issue from GitHub and retry once before giving up quietly.
+        """
+        item = self.store.get(pr_number)
+        if item is None or not item.issue_number:
+            return
+        try:
+            await self.github.comment(repo, item.issue_number, body)
+            return
+        except Exception as exc:
+            log.warning(
+                "comment failed on issue #%s for PR #%s: %s",
+                item.issue_number, pr_number, exc,
+            )
+
+        # Re-resolve: the issue may have been closed, deleted, or recreated.
+        try:
+            found = await self.github.find_tracking_issue(
+                repo, pr_number, self.cfg.trigger_label
+            )
+        except Exception:
+            found = None
+
+        if found and found != item.issue_number:
+            self.store.set_issue_number(pr_number, found)
+            self.store.log(
+                "issue_repointed",
+                f"issue #{item.issue_number} for PR #{pr_number} is gone; "
+                f"now tracking #{found}",
+                pr_number=pr_number,
+            )
+            try:
+                await self.github.comment(repo, found, body)
+                return
+            except Exception:
+                pass
+
+        # Never silent: an undelivered update is a gap in the audit trail, even
+        # though the session itself is unaffected.
+        self.store.log(
+            "comment_failed",
+            f"could not post the update for PR #{pr_number}; "
+            "the session is unaffected, but the issue was not updated",
+            pr_number=pr_number,
+        )
 
     # ------------------------------------------------------------ reconcile
 
@@ -430,16 +482,12 @@ class Orchestrator:
                     st.FAILED: "Needs a human",
                     st.SKIPPED: "No longer blocked",
                 }[state]
-                try:
-                    await self.github.comment(
-                        item.repo,
-                        item.issue_number,
-                        f"**{verdict}**\n\n{summary}\n\n"
-                        f"Session: {item.session_url} · "
-                        f"ACUs: {session.acus_consumed}",
-                    )
-                except Exception as exc:
-                    log.warning("comment failed on #%s: %s", item.issue_number, exc)
+                await self._comment_safely(
+                    item.repo,
+                    item.pr_number,
+                    f"**{verdict}**\n\n{summary}\n\n"
+                    f"Session: {item.session_url}",
+                )
 
         return settled
 

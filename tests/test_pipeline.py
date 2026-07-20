@@ -827,3 +827,53 @@ def test_queued_and_in_flight_are_distinct() -> None:
     assert m["in_flight"] == 2, "only dispatched/running sessions are in flight"
     assert m["queued"] > 0, "the rest are queued"
     assert m["queued"] + m["in_flight"] <= m["total_tracked"]
+
+
+def test_failed_comment_does_not_discard_a_running_session() -> None:
+    """A cosmetic comment must never orphan real, billed work.
+
+    A deleted tracking issue made commenting 404, which failed the whole
+    dispatch — reporting failure while a Devin session was actually running.
+    """
+
+    class DeadIssue(MockGitHubClient):
+        async def comment(self, repo: str, issue_number: int, body: str) -> None:
+            raise RuntimeError("410 issue was deleted")
+
+        async def find_tracking_issue(self, repo, pr_number, label):
+            return None
+
+    gh = DeadIssue()
+    orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
+    pr = asyncio.run(gh.get_pr(FORK, 28627))
+    asyncio.run(orch.record(FORK, pr, "conflict"))
+
+    item = asyncio.run(orch.dispatch(FORK, 28627))
+    assert item.session_id, "the session must survive a comment failure"
+    assert item.state == st.DISPATCHED
+    assert "comment_failed" in [e["kind"] for e in orch.store.recent_events(10)]
+
+
+def test_stale_issue_reference_self_heals() -> None:
+    """If the tracked issue vanished, re-resolve it rather than giving up."""
+    calls: list[int] = []
+
+    class MovedIssue(MockGitHubClient):
+        async def comment(self, repo: str, issue_number: int, body: str) -> None:
+            calls.append(issue_number)
+            if issue_number == 999:
+                raise RuntimeError("404 not found")
+            await super().comment(repo, issue_number, body)
+
+    gh = MovedIssue()
+    orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
+    pr = asyncio.run(gh.get_pr(FORK, 28627))
+    asyncio.run(orch.record(FORK, pr, "conflict"))
+    real = orch.store.get(28627).issue_number
+    orch.store.set_issue_number(28627, 999)  # simulate a stale/deleted reference
+
+    asyncio.run(orch.dispatch(FORK, 28627))
+
+    assert calls[0] == 999 and calls[-1] == real, "must retry against the real issue"
+    assert orch.store.get(28627).issue_number == real
+    assert "issue_repointed" in [e["kind"] for e in orch.store.recent_events(10)]
