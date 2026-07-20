@@ -427,12 +427,55 @@
   </div>
 </section>
 
-<!-- ============ 4 · SOLUTION ============ -->
+<!-- ============ 4 · DEMO ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>How · beat 4</span><span class="t">2:00 – 2:25</span></div>
-    <h2>So we hired a teammate for exactly this work.</h2>
-    <p class="lede">Not a helper someone drives — a teammate that gets <strong>assigned</strong> the mechanical backlog and owns it end to end. Built on the Devin API.</p>
+    <div class="eyebrow"><span>How · beat 4 · demo</span><span class="t">2:00 – 2:45</span></div>
+    <p class="lede">So we hired a <strong>teammate</strong> for this work — one that gets
+      <em class="hl">assigned</em> the mechanical backlog and owns it end to end. Here it is,
+      on a real PR.</p>
+    <h2>“Approved and green.” Then it rotted.</h2>
+    <p>A maintainer's own fix, <strong>approved 286 days ago</strong>. A month ago a reviewer
+      confirmed it was <em>"approved and green"</em> — waiting on one unanswered question.
+      Today it is conflicted: it rotted <em class="hl">while waiting for a human to reply</em>.</p>
+    <div class="demosteps">
+      <div><b>Detected</b><p><code>dirty</code>; author last pushed <strong>286 days</strong>
+        ago — stalled, safe to touch.</p></div>
+      <div><b>Dispatched</b><p>Tracking issue labelled; one session, ACU-capped, scoped to
+        the PR's branch.</p></div>
+      <div><b>Resolved</b><p>Two renames collided — master's <code>owner→editor</code> and the
+        contributor's <code>get_tag→get_or_create_tag</code>. Devin reconciled both, and
+        ported the rename into two test files master added <em>after</em> the PR was
+        written.</p></div>
+      <div><b>Verified</b><p>Re-checked on GitHub: <code>dirty → mergeable</code>. Verdict
+        commented on the issue.</p></div>
+    </div>
+    <div class="links">
+      <a href="https://github.com/apache/superset/pull/35541" target="_blank" rel="noopener">original &nbsp;<b>apache/superset#35541</b></a>
+      <a href="https://github.com/raymondtangsc/superset/pull/12" target="_blank" rel="noopener">replay &nbsp;<b>fork #12</b></a>
+      <a href="https://github.com/raymondtangsc/superset/issues/33" target="_blank" rel="noopener">tracking issue &nbsp;<b>#33</b></a>
+      <a href="https://app.devin.ai/sessions/8f709dce0272459382ad19d64fb98a8f" target="_blank" rel="noopener">Devin session &nbsp;<b>8f709dce</b></a>
+    </div>
+    <span class="cutline">⌘ cut to screen recording — dashboard · Devin session · the PR going green</span>
+    <div class="foot">Real contributor commits, replayed onto our fork with the conflict
+      intact. Untouched by Devin: the PR also waits on a factual question and on a second PR
+      landing — human calls, which can now <em>be</em> made instead of waiting behind a
+      merge conflict.</div>
+    <div class="notes"><span class="win">2:00 – 2:45 · demo VO, ~65 words</span>
+      So we hired a teammate for exactly this work. This is a maintainer's own bug fix, approved two hundred and eighty-six days ago. A
+      month ago a reviewer said it was "approved and green" — just waiting on one question.
+      Nobody answered, and while it waited, main moved: today it conflicts. Watch. The sweep
+      finds it, one session spawns, and Devin reconciles two renames that collided — then we
+      re-check GitHub: dirty becomes mergeable.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · SOLUTION ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>How · beat 5</span><span class="t">2:45 – 3:20</span></div>
+    <h2>What it does, and to how much of the backlog.</h2>
     <div class="pipewrap">
       <div class="pipe">
         <div class="inlets">
@@ -479,8 +522,8 @@
       lever: every session gets a hard ACU ceiling. Trigger design: discovery is sweep-only —
       the quiet gate deliberately waits days for a PR to go stale, so push-webhook seconds buy
       nothing. The one webhook is the label, where a human is waiting and latency matters.</div>
-    <div class="notes"><span class="win">2:00 – 2:25 · ~55 words</span>
-      So we hired a teammate for exactly this work. Two ways in: a scheduled sweep that
+    <div class="notes"><span class="win">2:45 – 3:20 · ~60 words</span>
+      Two ways in: a scheduled sweep that
       autonomously finds stale, unmergeable PRs — and one webhook, a human labeling a PR to
       ask for it now. Detection is deterministic, no model. Each blocked PR gets a tracking
       issue, then one budget-capped Devin session. And here's every blocker in the repo, sized. Conflicts and red CI are
@@ -491,53 +534,10 @@
   </div>
 </section>
 
-<!-- ============ 5 · DEMO ============ -->
-<section class="beat">
-  <div class="wrap">
-    <div class="eyebrow"><span>How · beat 5 · demo</span><span class="t">2:25 – 3:10</span></div>
-    <h2>“Approved and green.” Then it rotted.</h2>
-    <p class="lede">A maintainer's own fix, <strong>approved 286 days ago</strong>. Thirty-one
-      days ago a reviewer confirmed it was <em>"approved and green, just waiting on"</em> one
-      unanswered question. Today it is conflicted — it rotted <em class="hl">while waiting for
-      a human to reply</em>.</p>
-    <div class="demosteps">
-      <div><b>Detected</b><p><code>dirty</code>; author last pushed <strong>286 days</strong>
-        ago — stalled, safe to touch.</p></div>
-      <div><b>Dispatched</b><p>Tracking issue labelled; one session, ACU-capped, scoped to
-        the PR's branch.</p></div>
-      <div><b>Resolved</b><p>Two renames collided — master's <code>owner→editor</code> and the
-        contributor's <code>get_tag→get_or_create_tag</code>. Devin reconciled both, and
-        ported the rename into two test files master added <em>after</em> the PR was
-        written.</p></div>
-      <div><b>Verified</b><p>Re-checked on GitHub: <code>dirty → mergeable</code>. Verdict
-        commented on the issue.</p></div>
-    </div>
-    <div class="links">
-      <a href="https://github.com/apache/superset/pull/35541" target="_blank" rel="noopener">original &nbsp;<b>apache/superset#35541</b></a>
-      <a href="https://github.com/raymondtangsc/superset/pull/12" target="_blank" rel="noopener">replay &nbsp;<b>fork #12</b></a>
-      <a href="https://github.com/raymondtangsc/superset/issues/33" target="_blank" rel="noopener">tracking issue &nbsp;<b>#33</b></a>
-      <a href="https://app.devin.ai/sessions/8f709dce0272459382ad19d64fb98a8f" target="_blank" rel="noopener">Devin session &nbsp;<b>8f709dce</b></a>
-    </div>
-    <span class="cutline">⌘ cut to screen recording — dashboard · Devin session · the PR going green</span>
-    <div class="foot">Real contributor commits, replayed onto our fork with the genuine
-      conflict intact. What Devin does not touch: the PR also waits on a factual question
-      about which release the bug traces to, and on a second PR landing. Those are human
-      calls — the point is they can now <em>be</em> made, instead of the PR sitting
-      unmergeable while they are answered.</div>
-    <div class="notes"><span class="win">2:25 – 3:10 · demo VO, ~60 words</span>
-      This is a maintainer's own bug fix, approved two hundred and eighty-six days ago. A
-      month ago a reviewer said it was "approved and green" — just waiting on one question.
-      Nobody answered, and while it waited, main moved: today it conflicts. Watch. The sweep
-      finds it, one session spawns, and Devin reconciles two renames that collided — then we
-      re-check GitHub: dirty becomes mergeable.
-    </div>
-  </div>
-</section>
-
 <!-- ============ 6 · ARCHITECTURE ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>How · beat 6</span><span class="t">3:10 – 3:45</span></div>
+    <div class="eyebrow"><span>How · beat 6</span><span class="t">3:20 – 3:55</span></div>
     <h2>The architecture, in five decisions.</h2>
     <div class="counters" style="max-width:54rem">
       <div class="counter"><span class="n">01</span>
@@ -568,7 +568,7 @@
         timestamped. The dashboard is a <em class="hl">view of the architecture</em>, not a
         bolt-on.<span class="src">store.py — state machine + event log behind the metrics</span></p></div>
     </div>
-    <div class="notes"><span class="win">3:10 – 3:45 · ~65 words</span>
+    <div class="notes"><span class="win">3:20 – 3:55 · ~65 words</span>
       Five decisions. The control plane is deterministic code — the agent is confined to
       the one stage that needs judgment. Discovery is sweep-only; the single webhook is a
       human's label. The agent is held to a teammate's bar — budgeted, scoped, verified
@@ -582,7 +582,7 @@
 <!-- ============ 7 · WHY DEVIN ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>Why · beat 7</span><span class="t">3:45 – 4:15</span></div>
+    <div class="eyebrow"><span>Why · beat 7</span><span class="t">3:55 – 4:20</span></div>
     <h2>A teammate, not a helper.</h2>
     <div class="whygrid">
       <div><h3>Automated — nobody drives it</h3>
@@ -604,7 +604,7 @@
       <div class="norm">“A truthful failure is worth far more than a green build that quietly dropped someone's work.”
         <small>prompts.py</small></div>
     </div>
-    <div class="notes"><span class="win">3:45 – 4:15 · ~60 words</span>
+    <div class="notes"><span class="win">3:55 – 4:20 · ~60 words</span>
       Why Devin? Two properties. Automated: nobody sits at a keyboard — event in, session
       out, one HTTP call to integrate. And customizable: we didn't adopt a feature, we built
       our own workflow around the engine in hours. This file is the proof — prompts.py is
@@ -617,7 +617,7 @@
 <!-- ============ 8 · PROOF ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>Observability · beat 8</span><span class="t">4:15 – 4:40</span></div>
+    <div class="eyebrow"><span>Observability · beat 8</span><span class="t">4:20 – 4:45</span></div>
     <h2>How you'd know it's working.</h2>
     <div class="tiles">
       <div class="tile"><div class="n ok">3 / 4</div>
@@ -640,7 +640,7 @@
       ACU <em>consumption</em> is not yet reported by the API for these sessions, so it is
       not claimed here — the ceiling is what the system enforces, and actual spend comes
       from the billing console.</div>
-    <div class="notes"><span class="win">4:15 – 4:40 · ~50 words</span>
+    <div class="notes"><span class="win">4:20 – 4:45 · ~50 words</span>
       Four numbers, live. Three of four conflicts resolved and verified — PRs stuck between
       nine months and two years, cleared in about six minutes each. The fourth failed, and
       the dashboard says so; that's the point of verifying against GitHub instead of trusting
@@ -653,7 +653,7 @@
 <!-- ============ 9 · NEXT ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>When · beat 9</span><span class="t">4:40 – 5:00</span></div>
+    <div class="eyebrow"><span>When · beat 9</span><span class="t">4:45 – 5:00</span></div>
     <h2>Start where the risk is zero.</h2>
     <div class="path">
       <div class="step"><span class="when">day 1</span>
@@ -678,7 +678,7 @@
     <div class="foot">Calibration for this timeline: everything in this deck — the analysis,
       the system, the live rescues — was built in hours. Two weeks is padded for your
       approvals, not for the engineering.</div>
-    <div class="notes"><span class="win">4:40 – 5:00 · ~45 words</span>
+    <div class="notes"><span class="win">4:45 – 5:00 · ~45 words</span>
       Rolling this out is fast because building it was fast — everything you've seen took
       hours, not weeks. Day one: measure your repo, read-only — your own 62 percent number
       by the afternoon. Days two to five: conflicts-only pilot behind a label and a budget.
