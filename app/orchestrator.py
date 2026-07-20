@@ -232,6 +232,23 @@ class Orchestrator:
             if outcome == "not_needed":
                 state = st.SKIPPED
 
+            # An agent's self-report is a claim, not evidence. Observed live: a
+            # session reported outcome="succeeded" with a detailed description of
+            # resolving six conflicts, while the branch head never moved and the
+            # PR stayed `dirty`. Confirm against GitHub before counting a win --
+            # otherwise the success rate measures the agent's confidence rather
+            # than its results.
+            if state == st.SUCCEEDED:
+                verified, why = await self._verify_unblocked(item)
+                if not verified:
+                    state = st.FAILED
+                    summary = f"Reported success, but {why}. Escalating. — {summary}"
+                    self.store.log(
+                        "verification_failed",
+                        f"PR #{item.pr_number}: agent claimed success but {why}",
+                        pr_number=item.pr_number,
+                    )
+
             self.store.set_state(
                 item.pr_number, state, detail=summary, acus=session.acus_consumed
             )
@@ -261,6 +278,34 @@ class Orchestrator:
                     log.warning("comment failed on #%s: %s", item.issue_number, exc)
 
         return settled
+
+    async def _verify_unblocked(self, item: WorkItem) -> tuple[bool, str]:
+        """Confirm against GitHub that the PR's original blocker is actually gone.
+
+        Returns (verified, reason_if_not). A PR that traded one blocker for
+        another still counts as progress on the blocker we dispatched for: a
+        rebased branch whose CI is now pending is a real step forward, and the
+        next sweep will pick up the CI blocker on its own merits.
+        """
+        try:
+            pr = await self.github.get_pr(item.repo, item.pr_number)
+        except Exception as exc:
+            # Cannot confirm, so do not claim a win.
+            return False, f"the PR could not be re-checked ({exc})"
+
+        if item.blocker == "conflict":
+            if pr.mergeable_state == "dirty":
+                return False, "the PR is still `dirty` (conflicts remain)"
+            if pr.mergeable is False:
+                return False, "GitHub still reports the PR as unmergeable"
+            return True, ""
+
+        if item.blocker == "failing_ci":
+            if pr.mergeable_state == "unstable":
+                return False, "checks are still failing"
+            return True, ""
+
+        return True, ""
 
     # ------------------------------------------------------- composite flows
 

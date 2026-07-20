@@ -329,3 +329,80 @@ def test_detect_hydrates_prs_missing_mergeable_state() -> None:
     assert gh.hydrated, "must fetch full PRs to learn mergeable_state"
     assert blocked, "hydration must recover the blocked PRs"
     assert 28627 in {pr.number for pr, _ in blocked}
+
+
+# ------------------------------------------------- outcome verification
+
+
+def _dispatched_item(orch: Orchestrator, pr_number: int, blocker: str = "conflict"):
+    pr = asyncio.run(orch.github.get_pr(FORK, pr_number))
+    orch.store.upsert_detected(
+        st.WorkItem(pr_number, FORK, pr.title, pr.author, blocker, 9.0, st.DETECTED)
+    )
+    orch.store.set_dispatched(pr_number, "sess-1", "https://app.devin.ai/sessions/sess-1")
+    return orch.store.get(pr_number)
+
+
+class _ClaimsSuccess(MockDevinClient):
+    """A session that reports success regardless of what it actually did."""
+
+    async def get_session(self, session_id: str) -> Session:
+        return Session(
+            session_id, "u", "finished",
+            acus_consumed=3.0,
+            structured_output={"outcome": "succeeded", "summary": "Resolved 6 conflicts."},
+        )
+
+
+def test_false_success_is_caught_by_verification() -> None:
+    """Observed live: an agent reported success while the PR stayed `dirty`.
+
+    A self-report is a claim. If GitHub still says the PR is blocked, the item
+    must not be counted as a win.
+    """
+    orch = Orchestrator(make_cfg(), Store(":memory:"), MockGitHubClient(), _ClaimsSuccess())
+    _dispatched_item(orch, 28627)  # fixture PR is `dirty` and stays that way
+
+    asyncio.run(orch.reconcile())
+
+    item = orch.store.get(28627)
+    assert item.state == st.FAILED, "unverified success must not count as success"
+    assert "still `dirty`" in (item.detail or "")
+    assert orch.store.metrics()["success_rate"] == 0.0
+
+
+def test_genuine_success_passes_verification() -> None:
+    """The same claim, but GitHub confirms the PR is no longer conflicted."""
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, _ClaimsSuccess())
+    _dispatched_item(orch, 28627)
+
+    # Simulate the rebase landing: the PR is no longer dirty.
+    from app.github_client import PullRequest
+
+    gh._prs[28627] = PullRequest(
+        **{**gh._prs[28627].__dict__, "mergeable_state": "clean", "mergeable": True}
+    )
+    asyncio.run(orch.reconcile())
+
+    item = orch.store.get(28627)
+    assert item.state == st.SUCCEEDED
+    assert orch.store.metrics()["success_rate"] == 1.0
+
+
+def test_conflict_resolved_but_ci_pending_still_counts() -> None:
+    """A rebased PR whose CI is now pending traded blockers -- that is progress.
+
+    The next sweep picks up the CI blocker on its own merits.
+    """
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, _ClaimsSuccess())
+    _dispatched_item(orch, 28627, blocker="conflict")
+
+    from app.github_client import PullRequest
+
+    gh._prs[28627] = PullRequest(
+        **{**gh._prs[28627].__dict__, "mergeable_state": "unstable", "mergeable": True}
+    )
+    asyncio.run(orch.reconcile())
+    assert orch.store.get(28627).state == st.SUCCEEDED

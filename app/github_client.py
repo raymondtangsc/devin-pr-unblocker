@@ -48,6 +48,9 @@ class PullRequest:
     head_ref: str
     base_ref: str
     html_url: str
+    # GitHub's boolean verdict, distinct from the coarse mergeable_state string.
+    # None while GitHub is still computing it.
+    mergeable: bool | None = None
 
     @property
     def age_days(self) -> float:
@@ -220,6 +223,7 @@ def _parse_pr(d: dict[str, Any]) -> PullRequest:
         updated_at=str(d.get("updated_at", "1970-01-01T00:00:00Z")),
         mergeable_state=str(d.get("mergeable_state", "unknown")),
         draft=bool(d.get("draft", False)),
+        mergeable=d.get("mergeable"),
         head_ref=str(head.get("ref", "")),
         base_ref=str(base.get("ref", "master")),
         html_url=str(d.get("html_url", "")),
