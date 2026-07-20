@@ -43,7 +43,7 @@
           background:var(--accent); z-index:10; }
 
   .beat { min-height:100vh; display:flex; flex-direction:column;
-          justify-content:center; padding:2.5rem 0 2rem;
+          justify-content:center; padding:1.8rem 0 1.4rem;
           border-top:1px solid var(--rule); }
   .beat:first-of-type { border-top:0; }
   .wrap { width:min(62rem, 92vw); margin:0 auto; }
@@ -121,11 +121,11 @@
                font-size:clamp(1.2rem,2.4vw,1.7rem); color:var(--ink);
                border-left:3px solid var(--rule); padding-left:1.2rem;
                margin:0 0 1rem; max-width:52ch; text-wrap:balance; }
-  .counters { display:grid; gap:.55rem; margin:1rem 0 1.3rem; }
+  .counters { display:grid; gap:.45rem; margin:.9rem 0 1.1rem; }
   .counter { display:grid; grid-template-columns:auto 1fr; gap:.85rem;
              align-items:start; background:var(--card);
              border:1px solid var(--rule); border-radius:6px;
-             padding:.65rem 1rem; }
+             padding:.55rem .95rem; }
   .counter .n { font-family:var(--mono); font-size:.74rem; color:var(--accent-ink);
                 margin-top:.2rem; }
   .counter p { margin:0; font-size:.92rem; }
@@ -203,8 +203,8 @@
   .snip code .c { color:var(--ink-3); font-style:italic; }
   .snip code .k { color:var(--accent-ink); }
   .snip code .s { color:var(--ok); }
-  .guardline { font-family:var(--mono); font-size:.76rem; color:var(--ink-3);
-               margin-top:1.1rem; }
+  .guardline { font-family:var(--mono); font-size:.74rem; color:var(--ink-3);
+               margin-top:.7rem; }
   .src { display:block; font-family:var(--mono); font-size:.66rem;
          color:var(--ink-3); margin-top:.4rem; letter-spacing:.03em; }
 
@@ -390,8 +390,8 @@
     <div class="pipewrap">
       <div class="pipe">
         <div class="inlets">
-          <div class="pnode"><b>webhook</b><span>fast path</span></div>
-          <div class="pnode"><b>scheduled sweep</b><span>source of truth</span></div>
+          <div class="pnode"><b>scheduled sweep</b><span>autonomous · finds stale + unmergeable</span></div>
+          <div class="pnode"><b>label webhook</b><span>human asks · immediate</span></div>
         </div>
         <span class="parrow">→</span>
         <div class="pnode"><b>detect + classify</b><span>deterministic · no model</span></div>
@@ -417,15 +417,15 @@
             <li>The 137 PRs waiting on human judgment</li></ul></div>
     </div>
     <div class="foot">ACU = agent compute unit, Devin's metered unit of work — the budget
-      lever: every session gets a hard ACU ceiling. Trigger design: webhooks are edge-triggered
-      and lossy — a dropped delivery would mean a PR silently never rescued. The scheduled sweep
-      re-derives the blocked set from repo state every cycle, so a missed webhook costs latency,
-      not coverage.</div>
+      lever: every session gets a hard ACU ceiling. Trigger design: discovery is sweep-only —
+      the quiet gate deliberately waits days for a PR to go stale, so push-webhook seconds buy
+      nothing. The one webhook is the label, where a human is waiting and latency matters.</div>
     <div class="notes"><span class="win">2:00 – 2:25 · ~55 words</span>
-      So we hired a teammate for exactly this work. Events come in two ways — webhooks for
-      speed, a scheduled sweep as the source of truth, because webhooks get dropped. Detection
-      is deterministic, no model. Each blocked PR gets a tracking issue, then one budget-capped
-      Devin session. And note the refuse lane: 137 PRs waiting on human review — it doesn't touch those.
+      So we hired a teammate for exactly this work. Two ways in: a scheduled sweep that
+      autonomously finds stale, unmergeable PRs — and one webhook, a human labeling a PR to
+      ask for it now. Detection is deterministic, no model. Each blocked PR gets a tracking
+      issue, then one budget-capped Devin session. And note the refuse lane: 137 PRs waiting
+      on human review — never touched.
     </div>
   </div>
 </section>
@@ -463,7 +463,7 @@
 <section class="beat">
   <div class="wrap">
     <div class="eyebrow"><span>How · beat 6</span><span class="t">3:10 – 3:45</span></div>
-    <h2>The architecture, in four decisions.</h2>
+    <h2>The architecture, in five decisions.</h2>
     <div class="counters" style="max-width:54rem">
       <div class="counter"><span class="n">01</span>
         <p><strong>Control plane vs. agent plane.</strong> The loop — detect, classify,
@@ -471,24 +471,27 @@
         exactly <em class="hl">one box: the judgment step</em>. A failed, stuck, or lying
         session becomes a failed work item — never a wedged system.<span class="src">orchestrator.py — no model call anywhere in the control path</span></p></div>
       <div class="counter"><span class="n">02</span>
-        <p><strong>Level-triggered, not event-dependent.</strong> A scheduled sweep re-derives
-        the blocked set from repo state every cycle; webhooks only buy latency. A dropped
-        event costs <em class="hl">seconds, not coverage</em> — and it runs behind a firewall
-        with zero inbound surface.<span class="src">main.py · run_sweep() — reconciliation, the Kubernetes argument</span></p></div>
+        <p><strong>Level-triggered, not event-dependent.</strong> Discovery is sweep-only:
+        each cycle re-derives the blocked set from repo state, so dropped events cost
+        <em class="hl">nothing — there are none to drop</em>. The single webhook is the label,
+        the one path where a human is waiting.<span class="src">main.py · run_sweep() — reconciliation, the Kubernetes argument</span></p></div>
       <div class="counter"><span class="n">03</span>
         <p><strong>Held to the same bar as any teammate.</strong> A hard budget per session;
         work we can't <em class="hl">prove</em> is mechanical is never assigned (the 137
-        review-bound PRs); and results count only after GitHub confirms them. Budgets,
-        scope, verification — the discipline we already apply to humans.<span class="src">max_acu_limit · classify() → return None · _verify_unblocked()</span></p></div>
+        review-bound PRs); and results count only after GitHub confirms them — the discipline we already apply to
+        humans. Worst case: one bad branch, recoverable from git history, still behind
+        human review.<span class="src">max_acu_limit · classify() → return None · _verify_unblocked()</span></p></div>
       <div class="counter"><span class="n">04</span>
+        <p><strong>Never interrupt a human.</strong> A PR pushed to in the last
+        <em class="hl">3 days</em> is work in progress, not rot — the sweep won't touch it
+        until it has gone quiet. Rot takes weeks; the teammate can wait days. The label
+        overrides: a human asking is consent.<span class="src">min_quiet_days · dispatch(force=True) on label</span></p></div>
+      <div class="counter"><span class="n">05</span>
         <p><strong>Every action leaves a durable record.</strong> The tracking issue is the
         work item, the spend gate, and the audit trail; every state transition is
         timestamped. The dashboard is a <em class="hl">view of the architecture</em>, not a
         bolt-on.<span class="src">store.py — state machine + event log behind the metrics</span></p></div>
     </div>
-    <div class="guardline">also load-bearing: upstream repo hard-blocklisted · idempotent dispatch ·
-      per-event dispatch cap · per-session ACU ceiling · pushes to the PR branch only —
-      worst case is one bad branch, recoverable from git history, still behind human review</div>
     <div class="notes"><span class="win">3:10 – 3:45 · ~60 words</span>
       Three decisions worth defending. Detection has no model in it — an API sweep; agent
       spend starts where judgment starts. The classifier refuses by default: if we can't
@@ -580,6 +583,11 @@
       <div class="step"><span class="when">month 2</span>
         <p><strong>Add CI repair.</strong> The classifier already separates red checks from
         review-waits — turn on the second lane.</p></div>
+      <div class="step"><span class="when">month 3</span>
+        <p><strong>Blame the merge that broke them.</strong> The sweep's snapshots bracket
+        every merge into main — join them and you get <em>"this merge conflicted 11 open
+        PRs"</em>: a per-merge cost metric nobody has today, and targeted hints that make
+        every rescue cheaper.</p></div>
       <div class="step"><span class="when">then</span>
         <p><strong>Same rail, more teammate jobs.</strong> The dispatch→verify→report loop is
         generic. Next candidate we already scoped: sweeping a known bug-class across 17 call
@@ -588,8 +596,9 @@
     <div class="notes"><span class="win">4:40 – 5:00 · ~45 words</span>
       Rolling this out is low-risk by construction. Week one: measure your repo, read-only —
       you get your own 62 percent number for free. Then a conflicts-only pilot behind a label
-      and a budget. Then CI repair. And the rail generalizes: any mechanical backlog becomes
-      a teammate job. Thanks — questions welcome.
+      and a budget; then CI repair; then attribution — which merge broke which PRs, a cost
+      metric nobody has today. And the rail generalizes: any mechanical backlog becomes a
+      teammate job. Thanks — questions welcome.
     </div>
   </div>
 </section>

@@ -79,10 +79,13 @@ class Config:
     # A PR with recent activity is someone's work in progress, not rot. The
     # system only touches PRs quiet for at least this many days -- force-pushing
     # onto a branch whose author is actively pushing would collide with their
-    # local work. 0 disables (demo mode). The manual label overrides this gate:
-    # a human explicitly asking is consent.
+    # local work. Fractional values work (0.0007 ~= one minute, for demos);
+    # 0 disables. The manual label overrides this gate: a human explicitly
+    # asking is consent. This gate is also why discovery needs no push
+    # webhooks: deliberately waiting days makes seconds of webhook latency
+    # meaningless, so the sweep alone carries detection.
     min_quiet_days: float = field(
-        default_factory=lambda: float(_env("MIN_QUIET_DAYS", "2") or 2)
+        default_factory=lambda: float(_env("MIN_QUIET_DAYS", "3") or 3)
     )
 
     @property

@@ -14,13 +14,10 @@ for _ in $(seq 1 30); do
 done
 curl -fsS "$HOST/healthz" | python3 -m json.tool
 
-say "1. Repository event: a push to master landed"
-# Every merge into master can conflict open PRs. This is the event that
-# manufactures the backlog, so it drives detection.
-curl -fsS -XPOST "$HOST/webhook/github" \
-  -H 'X-GitHub-Event: push' -H 'Content-Type: application/json' \
-  -d '{"ref":"refs/heads/master","repository":{"full_name":"'"${GITHUB_REPO:-raymondtangsc/superset}"'"}}' \
-  | python3 -m json.tool
+say "1. Scheduled sweep fires (discovery is sweep-only by design)"
+# The quiet-period gate waits days for a PR to go stale, so push-webhook
+# latency buys nothing for detection -- the sweep alone carries discovery.
+curl -fsS -XPOST "$HOST/simulate" | python3 -m json.tool
 
 say "2. Guardrail: the same event aimed at upstream apache/superset"
 curl -s -o /dev/stdout -w '\nHTTP %{http_code}\n' -XPOST "$HOST/webhook/github" \

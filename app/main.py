@@ -1,7 +1,8 @@
 """FastAPI service: webhook receiver, reconciler loop, and observability.
 
 Endpoints
-    POST /webhook/github   GitHub events (push, pull_request, issues)
+    POST /webhook/github   GitHub events (issues.labeled only -- the human path;
+                           discovery is sweep-only, see _route_event)
     POST /simulate         fire a synthetic event without GitHub (demo path)
     GET  /metrics          JSON metrics for scraping
     GET  /healthz          liveness
@@ -182,28 +183,15 @@ def create_app() -> FastAPI:
 
 
 async def _route_event(orch, cfg, event: str, payload: dict, repo: str) -> dict:
-    """Map a GitHub event onto a pipeline action."""
-    if event == "push":
-        ref = payload.get("ref", "")
-        if not ref.endswith(("/master", "/main")):
-            return {"ignored": f"push to {ref}"}
-        # Every merge into master can conflict open PRs -- this is the event that
-        # actually manufactures the backlog, so it drives the sweep.
-        return await orch.handle_repo_event(repo, reason=f"push to {ref}")
+    """Map a GitHub event onto a pipeline action.
 
-    if event == "pull_request":
-        action = payload.get("action")
-        if action not in {"opened", "reopened", "synchronize"}:
-            return {"ignored": f"pull_request.{action}"}
-        number = (payload.get("pull_request") or {}).get("number")
-        if number is None:
-            return {"ignored": "pull_request without a number"}
-        pr = await orch.github.get_pr(repo, number)
-        if pr.blocker is None or pr.draft:
-            return {"pr": number, "blocked": False}
-        await orch.record(repo, pr, pr.blocker)
-        return {"pr": number, "blocked": True, "blocker": pr.blocker, "tracked": True}
-
+    Only ``issues.labeled`` is handled. Discovery is deliberately sweep-only:
+    the quiet-period gate means detection waits days for a PR to go stale, so
+    the seconds a push webhook would save are meaningless -- while the sweep
+    guarantees coverage regardless of delivery failures. The one path where
+    latency matters is a human labeling a PR and expecting action now, and
+    that is the one webhook this service accepts.
+    """
     if event == "issues":
         action = payload.get("action")
         if action != "labeled":

@@ -50,7 +50,7 @@ more of this, which is why it is recurring work rather than a one-off cleanup.
 ## Architecture
 
 ```
-  GitHub event                  push to master · pull_request · issues.labeled
+  triggers                      scheduled sweep (autonomous) · issues.labeled (human)
        │
        ▼
   detect()        classify open PRs by mergeable_state          deterministic
@@ -72,13 +72,16 @@ Why an issue in the middle: the trigger is repository activity, but the issue is
 the durable work item, the audit record, and the spend gate. A maintainer can
 also apply the label by hand to point Devin at any PR.
 
-**Trigger design — poll for completeness, webhook for latency.** The scheduled
-sweep (`POLL_INTERVAL_SECONDS`, default 600) is the source of truth: it
-re-derives blocked-PRs from actual repo state every cycle, so a dropped webhook
-costs latency, not coverage. Webhooks are edge-triggered and lossy; the sweep is
-level-triggered and idempotent — the same reconciliation argument Kubernetes is
-built on. Behind-the-firewall deployments run poll-only (`0` disables the sweep
-for webhook-only setups).
+**Trigger design — discovery is sweep-only; the one webhook is the human.**
+The scheduled sweep (`POLL_INTERVAL_SECONDS`, default 600) re-derives the
+blocked set from actual repo state every cycle — level-triggered and
+idempotent, the same reconciliation argument Kubernetes is built on. Push
+webhooks were deliberately removed: the quiet-period gate waits days for a PR
+to go stale, so the seconds a push webhook saves are meaningless, while the
+sweep guarantees coverage with zero inbound surface. The single webhook this
+service accepts is `issues.labeled` — a human pointing at a PR and expecting
+action now, the one path where latency matters (and the label bypasses the
+quiet gate: explicit ask is consent).
 
 | File | Role |
 |---|---|
@@ -145,8 +148,8 @@ pretending to dispatch work.
 > A valid key with a missing or wrong org id returns `404 Organization not
 > found` — which is how you tell it apart from a bad key (`403 Unauthorized`).
 
-To receive real webhooks, expose the service and point a GitHub webhook at
-`POST /webhook/github` for the **push**, **pull_request**, and **issues** events:
+To receive the label webhook, expose the service and point a GitHub webhook at
+`POST /webhook/github` for the **issues** event only:
 
 ```bash
 ngrok http 8000     # then use https://<id>.ngrok.app/webhook/github

@@ -643,3 +643,20 @@ def test_sweep_drains_previously_deferred_queue() -> None:
     second = asyncio.run(orch.handle_repo_event(FORK, reason="sweep 2"))
     assert len(second["dispatched"]) == 2, "later sweeps must drain the queue"
     assert set(second["dispatched"]) <= set(first["deferred"])
+
+
+def test_webhook_routes_only_the_label_event() -> None:
+    """Discovery is sweep-only; push and pull_request events are ignored.
+
+    The quiet gate waits days, so webhook seconds buy nothing for detection --
+    the label is the one event where latency matters (a human is waiting).
+    """
+    from app.main import _route_event
+
+    orch = Orchestrator(make_cfg(), Store(":memory:"), MockGitHubClient(), MockDevinClient())
+    push = asyncio.run(_route_event(orch, orch.cfg, "push",
+                                    {"ref": "refs/heads/master"}, FORK))
+    pr = asyncio.run(_route_event(orch, orch.cfg, "pull_request",
+                                  {"action": "opened", "pull_request": {"number": 28627}}, FORK))
+    assert "ignored" in push and "ignored" in pr
+    assert not orch.store.all_items(), "non-label events must not trigger work"
