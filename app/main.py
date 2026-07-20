@@ -21,7 +21,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from .config import ConfigError, load_config
 from .dashboard import render_dashboard
-from .devin_client import build_devin_client
+from .devin_client import DemoWorld, build_devin_client
 from .github_client import build_github_client
 from .orchestrator import Orchestrator
 from .store import Store
@@ -37,8 +37,10 @@ RECONCILE_INTERVAL_SECONDS = 10
 def create_app() -> FastAPI:
     cfg = load_config()
     store = Store(cfg.db_path)
-    github = build_github_client(cfg)
-    devin = build_devin_client(cfg)
+    # One shared world so the two mocks agree about reality; unused in live mode.
+    world = DemoWorld()
+    github = build_github_client(cfg, world)
+    devin = build_devin_client(cfg, world)
     orch = Orchestrator(cfg, store, github, devin)
 
     @contextlib.asynccontextmanager

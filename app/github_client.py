@@ -171,7 +171,11 @@ class MockGitHubClient:
     exercises genuine titles, ages and merge states rather than invented ones.
     """
 
-    def __init__(self, fixture: str | Path | None = None) -> None:
+    def __init__(self, fixture: str | Path | None = None, world: Any = None) -> None:
+        # `world` is shared with the mock agent: a PR it has "fixed" reads back
+        # as clean here, so the orchestrator's verification step sees a real
+        # change instead of rejecting every success.
+        self._world = world
         path = Path(fixture or Path(__file__).parent / "fixtures" / "stuck_prs.json")
         self._prs = {
             p["number"]: _parse_pr(p) for p in json.loads(Path(path).read_text())
@@ -190,7 +194,14 @@ class MockGitHubClient:
     async def get_pr(self, repo: str, number: int) -> PullRequest:
         if number not in self._prs:
             raise KeyError(f"no fixture PR #{number}")
-        return self._prs[number]
+        pr = self._prs[number]
+        if self._world is not None and number in self._world.resolved:
+            # Mirrors the live outcome: the conflict is gone, and CI is now the
+            # next thing to settle.
+            return PullRequest(
+                **{**pr.__dict__, "mergeable_state": "clean", "mergeable": True}
+            )
+        return pr
 
     async def create_issue(
         self, repo: str, title: str, body: str, labels: list[str]
@@ -236,7 +247,7 @@ async def _sleep(seconds: float) -> None:
     await asyncio.sleep(seconds)
 
 
-def build_github_client(cfg) -> GitHubClient:
+def build_github_client(cfg, world: Any = None) -> GitHubClient:
     if cfg.live_github:
         return LiveGitHubClient(cfg.github_token, cfg)
-    return MockGitHubClient()
+    return MockGitHubClient(world=world)

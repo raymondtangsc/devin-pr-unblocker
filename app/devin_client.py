@@ -123,6 +123,32 @@ class LiveDevinClient:
             return _parse_session(resp.json())
 
 
+class DemoWorld:
+    """Shared state between the two mocks.
+
+    Without this the offline demo cannot be faithful: the orchestrator verifies
+    a reported success against GitHub, so if the mock repository never changes,
+    every success is correctly rejected and the demo reports 0%. The mock agent
+    therefore has to actually "fix" the mock PR, exactly as the real one does.
+    """
+
+    def __init__(self) -> None:
+        self.resolved: set[int] = set()
+
+    def mark_resolved(self, pr_number: int) -> None:
+        self.resolved.add(pr_number)
+
+
+def _pr_number_from_tags(tags: list[str]) -> int | None:
+    for t in tags:
+        if t.startswith("pr:"):
+            try:
+                return int(t.split(":", 1)[1])
+            except ValueError:
+                return None
+    return None
+
+
 class MockDevinClient:
     """Deterministic-ish stand-in used when credentials are absent.
 
@@ -132,7 +158,14 @@ class MockDevinClient:
     system reports problems.
     """
 
-    def __init__(self, *, fail_every: int = 4, polls_to_finish: int = 2) -> None:
+    def __init__(
+        self,
+        *,
+        fail_every: int = 4,
+        polls_to_finish: int = 2,
+        world: DemoWorld | None = None,
+    ) -> None:
+        self._world = world
         self._counter = itertools.count(1)
         self._sessions: dict[str, dict[str, Any]] = {}
         # Deterministic rather than probabilistic: a demo must show the failure
@@ -156,6 +189,7 @@ class MockDevinClient:
             "doomed": index % self._fail_every == 0,
             "created": time.time(),
             "max_acu": max_acu,
+            "pr_number": _pr_number_from_tags(tags),
         }
         return Session(
             session_id=sid,
@@ -186,6 +220,11 @@ class MockDevinClient:
                     "without regenerating it; escalating to a human.",
                 },
             )
+
+        # The agent "did the work": make the change observable in the mock
+        # repository so the orchestrator's verification step can confirm it.
+        if self._world is not None and state.get("pr_number") is not None:
+            self._world.mark_resolved(state["pr_number"])
 
         acus = round(self._rng.uniform(1.5, 6.0), 2)
         return Session(
@@ -245,8 +284,8 @@ def _parse_session(payload: dict[str, Any]) -> Session:
     )
 
 
-def build_devin_client(cfg) -> DevinClient:
+def build_devin_client(cfg, world: DemoWorld | None = None) -> DevinClient:
     """Pick a client based on config, degrading to mock without credentials."""
     if cfg.live_devin:
         return LiveDevinClient(cfg.devin_api_key, cfg.devin_org_id, cfg.devin_api_base)
-    return MockDevinClient()
+    return MockDevinClient(world=world)

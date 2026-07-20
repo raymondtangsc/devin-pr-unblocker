@@ -216,7 +216,7 @@ succeeds teaches an engineering audience nothing about how failures surface.
 ## Tests
 
 ```bash
-./.venv/bin/python -m pytest -q     # 24 tests
+./.venv/bin/python -m pytest -q     # 32 tests
 ```
 
 Coverage is concentrated on what would cause real damage: the upstream
@@ -238,6 +238,13 @@ worth reading, because all three fail *silently*:
 3. **`suspended` / `blocked` sessions are terminal for an unattended pipeline.**
    Nobody is watching to answer the agent's question, so these escalate rather
    than wait.
+
+And one consequence worth knowing about: because the orchestrator verifies
+reported successes against the repository, the *mock* agent has to actually
+repair the *mock* PR, or verification correctly rejects every success and the
+offline demo reports 0%. `DemoWorld` is the small shared state that lets the two
+mocks agree about reality. A demo harness that cannot pass its own verification
+step is not a demo of the real system.
 
 ---
 

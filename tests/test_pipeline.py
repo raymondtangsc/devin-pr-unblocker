@@ -406,3 +406,36 @@ def test_conflict_resolved_but_ci_pending_still_counts() -> None:
     )
     asyncio.run(orch.reconcile())
     assert orch.store.get(28627).state == st.SUCCEEDED
+
+
+def test_mock_pair_produces_verifiable_successes() -> None:
+    """The offline demo must survive the verification step.
+
+    If the mock agent never actually changes the mock repository, verification
+    correctly rejects every success and the demo reports 0% — which is a broken
+    demo, not a broken system.
+    """
+    from app.devin_client import DemoWorld
+
+    world = DemoWorld()
+    orch = Orchestrator(
+        # Dispatch past the mock's every-4th failure so both paths are covered.
+        make_cfg(max_dispatches_per_event=8),
+        Store(":memory:"),
+        MockGitHubClient(world=world),
+        MockDevinClient(world=world),
+    )
+    asyncio.run(orch.handle_repo_event(FORK, reason="test"))
+
+    async def drain() -> None:
+        for _ in range(12):
+            if not orch.store.by_state(st.DISPATCHED, st.RUNNING):
+                return
+            await orch.reconcile()
+
+    asyncio.run(drain())
+
+    m = orch.store.metrics()
+    assert m["succeeded"] > 0, "verified successes must be reachable in mock mode"
+    assert m["failed"] > 0, "the failure path must still be exercised"
+    assert 0 < m["success_rate"] < 1
