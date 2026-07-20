@@ -236,7 +236,8 @@
           border:1px solid var(--rule); border-radius:6px; padding:.8rem 1rem; }
   .step .when { font-family:var(--mono); font-size:.72rem; color:var(--accent-ink); }
   .step p { margin:0; font-size:.9rem; }
-  .step strong { display:block; margin-bottom:.1rem; }
+  /* only the leading card title is a block; inline emphasis stays inline */
+  .step p > strong:first-child { display:block; margin-bottom:.1rem; }
 
   footer { padding:2.5rem 0 3.5rem; border-top:1px solid var(--rule);
            font-size:.78rem; color:var(--ink-3); }
@@ -590,9 +591,10 @@
         hands Devin the other side's intent, so the fix lands with far more
         confidence.</p></div>
       <div class="step"><span class="when">then</span>
-        <p><strong>Same rail, more teammate jobs.</strong> The dispatch→verify→report loop is
-        generic. Next candidate we already scoped: sweeping a known bug-class across 17 call
-        sites — a weekend, not a project, once the rail exists.</p></div>
+        <p><strong>Same rail, more teammate jobs.</strong> The dispatch→verify→report loop
+        doesn't care what the job is — only the prompt changes. One we turned up while
+        analysing this repo: a security fix its maintainers have applied by hand three
+        times, with <strong>17 call sites</strong> still missing it.</p></div>
     </div>
     <div class="foot">Calibration for this timeline: everything in this deck — the analysis,
       the system, the live rescues — was built in hours. Two weeks is padded for your
@@ -603,8 +605,9 @@
       by the afternoon. Days two to five: conflicts-only pilot behind a label and a budget.
       Week two: CI repair, plus attribution — knowing which merge conflicted a PR replaces
       the staleness heuristic with an exact signal, and tells Devin what the other side was
-      trying to do. Two weeks to a working teammate — and the rail generalizes to any
-      mechanical backlog. Thanks — questions welcome.
+      trying to do. Two weeks to a working teammate — and then only the prompt changes: we
+      already found the next job while analysing this repo, a security fix with seventeen
+      call sites still missing it. Thanks — questions welcome.
     </div>
   </div>
 </section>
