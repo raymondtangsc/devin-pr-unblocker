@@ -342,20 +342,19 @@
 <section class="beat">
   <div class="wrap">
     <div class="eyebrow"><span>What · beat 3</span><span class="t">1:25 – 2:00</span></div>
-    <p class="objection">“If nobody bothered to fix them… aren't they just not worth merging?”</p>
+    <h2>What does PR rot cost?</h2>
     <div class="counters">
       <div class="counter"><span class="n">01</span>
-        <p><strong>Red is unread, not rejected.</strong> Reviewer time is the scarcest
-        resource, so reviewers triage green-first. A conflicted PR never <em class="hl">enters</em>
-        the queue — nobody ever decided it wasn't wanted. Nobody saw it.</p></div>
+        <p><strong>The rework toll.</strong> All <strong>234</strong> blocked PRs need an
+        engineer to un-stick them — rebase, diagnose CI, re-green — <em class="hl">often more
+        than once</em>, because main keeps moving while they wait for review.</p></div>
       <div class="counter"><span class="n">02</span>
-        <p><strong>The contributor's math stops working.</strong> For a small fix,
-        rebasing + diagnosing someone else's CI costs more than writing the patch did.
-        Rational contributors walk — so the filter kills <em class="hl">small-but-valuable</em> first.</p></div>
+        <p><strong>“Weren't they just bad PRs?” No.</strong> 87% of human PRs that reach a
+        conclusion get merged — red is <em class="hl">unread, not rejected</em>. Reviewers
+        triage green-first, and the friction kills small-but-valuable fixes first.</p></div>
       <div class="counter"><span class="n">03</span>
-        <p><strong>The data says they were wanted.</strong> 87% of human PRs that reach a
-        conclusion get merged. Merging is the <em class="hl">default outcome</em> — what changes
-        with time isn't merit, it's friction:</p></div>
+        <p><strong>The attrition.</strong> What changes with time stuck isn't merit —
+        it's survival:</p></div>
     </div>
     <div class="decay" role="img" aria-label="Merge rate by time open: under 1 week 91%, 1 to 4 weeks 90%, 1 to 3 months 85%, 3 to 12 months 64%">
       <div class="drow"><div class="k">&lt; 1 week <small>n=321</small></div><div class="dtrack"><div class="dbar" style="width:91%"></div></div><div class="v">91%</div></div>
@@ -363,20 +362,19 @@
       <div class="drow"><div class="k">1–3 months <small>n=57</small></div><div class="dtrack"><div class="dbar" style="width:85%"></div></div><div class="v">85%</div></div>
       <div class="drow"><div class="k">3–12 months <small>n=51</small></div><div class="dtrack"><div class="dbar loss" style="width:64%"></div></div><div class="v">64%</div></div>
     </div>
-    <p class="punch">The process never rejects these PRs — it <strong>starves</strong> them,
-      on friction, not merit. And the tax is paid either way: <strong>all 234</strong> need a
-      human to un-stick them, often more than once — and <strong>≈ 39 will never land
-      at all</strong>.</p>
+    <p class="punch">That's the <strong>merge tax</strong>: engineers paying again for work
+      you already paid for — and <strong>≈ 39 improvements</strong> your codebase
+      never gets.</p>
     <div class="foot">Merge rates from the 800 most recently updated closed PRs
       (550 human-authored) — a sample that skews recent, so true abandonment is likely
       worse. Conflict rate triples from month one (17%) to month two (51%).</div>
     <div class="notes"><span class="win">1:25 – 2:00 · ~70 words</span>
-      Fair objection: maybe stuck PRs just aren't worth merging. Three answers. Reviewers
-      triage green-first — red is unread, not rejected. For a small fix, re-greening costs
-      more than the patch did, so contributors walk. And the data: 87 percent of concluded
-      PRs merge; the rate decays 91 to 64 with time stuck. Either way you pay: humans must
-      un-stick all 234 — a PR fixed today can rot again next week — and about 39 never
-      land at all.
+      So what does rot cost? Three things. All 234 blocked PRs need an engineer to
+      un-stick them — often more than once, because main keeps moving. And no, these
+      aren't junk: 87 percent of PRs that conclude get merged — red is unread, not
+      rejected. Worst, the longer a PR stays stuck the likelier it dies: 91 percent
+      falls to 64. That's the merge tax — paying again for work you already paid for,
+      and about 39 improvements you never get.
     </div>
   </div>
 </section>
