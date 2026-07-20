@@ -24,6 +24,18 @@ API = "https://api.github.com"
 BLOCKED_STATES = {"dirty": "conflict", "unstable": "failing_ci"}
 
 
+class GitHubSetupError(RuntimeError):
+    """A misconfiguration the operator must fix, not a transient failure."""
+
+
+class IssuesDisabled(GitHubSetupError):
+    pass
+
+
+class GitHubPermissionError(GitHubSetupError):
+    pass
+
+
 @dataclass
 class PullRequest:
     number: int
@@ -122,6 +134,19 @@ class LiveGitHubClient:
                 headers=self._headers,
                 json={"title": title, "body": body, "labels": labels},
             )
+            # GitHub disables Issues on forks by default and answers 410 Gone.
+            # That is a setting, not an outage, so say so instead of surfacing a
+            # raw HTTP error several layers up.
+            if r.status_code == 410:
+                raise IssuesDisabled(
+                    f"Issues are disabled on {repo}. Enable them under "
+                    "Settings > General > Features > Issues, then re-run."
+                )
+            if r.status_code == 403:
+                raise GitHubPermissionError(
+                    f"Token cannot create issues on {repo}. A fine-grained PAT "
+                    "needs Issues: read and write."
+                )
             r.raise_for_status()
             return int(r.json()["number"])
 

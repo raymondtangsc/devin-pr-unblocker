@@ -258,3 +258,74 @@ def test_blocked_session_is_terminal_and_escalates() -> None:
     outcome, summary = _read_outcome(s)
     assert outcome == "failed"
     assert "human" in summary.lower()
+
+
+def test_waiting_for_user_is_terminal_despite_running_status() -> None:
+    """Observed live: a finished session still reports status='running'.
+
+    The only signal that it is waiting on a human is status_detail. Reading the
+    coarse status alone means these items poll forever.
+    """
+    s = _parse_session(
+        {
+            "session_id": "s",
+            "url": "u",
+            "status": "running",
+            "status_detail": "waiting_for_user",
+        }
+    )
+    assert s.status_detail == "waiting_for_user"
+    assert s.needs_human, "must escalate rather than poll forever"
+    assert s.is_terminal
+    outcome, summary = _read_outcome(s)
+    assert outcome == "failed"
+    assert "waiting_for_user" in summary
+
+
+def test_actively_working_session_is_not_terminal() -> None:
+    s = _parse_session(
+        {"session_id": "s", "url": "u", "status": "running", "status_detail": "working"}
+    )
+    assert not s.needs_human and not s.is_terminal
+
+
+def test_suspended_by_inactivity_is_terminal() -> None:
+    s = _parse_session(
+        {"session_id": "s", "url": "u", "status": "suspended", "status_detail": "inactivity"}
+    )
+    assert s.needs_human and s.is_terminal
+
+
+def test_detect_hydrates_prs_missing_mergeable_state() -> None:
+    """The GitHub list endpoint omits mergeable_state; detect must fill it in.
+
+    Without hydration every PR reads as 'unknown' and nothing is ever detected —
+    which is exactly how this failed against the live API.
+    """
+    from app.github_client import PullRequest
+
+    class ListWithoutState(MockGitHubClient):
+        """Mimics the real list endpoint: no mergeable_state on listed PRs."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.hydrated: list[int] = []
+
+        async def list_open_prs(self, repo: str):
+            out = []
+            for pr in self._prs.values():
+                stripped = PullRequest(**{**pr.__dict__, "mergeable_state": "unknown"})
+                out.append(stripped)
+            return out
+
+        async def get_pr(self, repo: str, number: int):
+            self.hydrated.append(number)
+            return await super().get_pr(repo, number)
+
+    gh = ListWithoutState()
+    o = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    blocked = asyncio.run(o.detect(FORK))
+
+    assert gh.hydrated, "must fetch full PRs to learn mergeable_state"
+    assert blocked, "hydration must recover the blocked PRs"
+    assert 28627 in {pr.number for pr, _ in blocked}

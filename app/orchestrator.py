@@ -19,7 +19,7 @@ import logging
 
 from . import store as st
 from .devin_client import DevinClient
-from .github_client import GitHubClient, PullRequest
+from .github_client import GitHubClient, GitHubSetupError, PullRequest
 from .prompts import build_issue_body, build_prompt
 from .store import Store, WorkItem
 
@@ -47,9 +47,17 @@ class Orchestrator:
         self.cfg.assert_repo_allowed(repo)
 
         prs = await self.github.list_open_prs(repo)
+
+        # GitHub's list endpoint does NOT include mergeable_state -- it is
+        # computed lazily and only appears on the single-PR endpoint. Every PR
+        # therefore arrives as "unknown" and must be hydrated individually.
+        # Bounded concurrency keeps a 376-PR sweep from hammering the API.
+        candidates = [pr for pr in prs if not pr.draft]
+        hydrated = await self._hydrate(repo, candidates)
+
         blocked = [
             (pr, blocker)
-            for pr in prs
+            for pr in hydrated
             if not pr.draft and (blocker := pr.blocker) is not None
         ]
         blocked.sort(key=lambda pair: pair[0].age_days, reverse=True)
@@ -61,6 +69,46 @@ class Orchestrator:
             blocked=len(blocked),
         )
         return blocked
+
+    async def _hydrate(
+        self, repo: str, prs: list[PullRequest], concurrency: int = 8
+    ) -> list[PullRequest]:
+        """Fill in mergeable_state for PRs the list endpoint left as 'unknown'.
+
+        A PR that fails to hydrate is dropped rather than guessed at: acting on
+        a stale or missing merge state is how you dispatch an agent at a PR that
+        was fine all along.
+        """
+        needs = [pr for pr in prs if pr.mergeable_state == "unknown"]
+        if not needs:
+            return prs
+
+        sem = asyncio.Semaphore(concurrency)
+
+        async def one(pr: PullRequest) -> PullRequest | None:
+            async with sem:
+                try:
+                    return await self.github.get_pr(repo, pr.number)
+                except Exception as exc:
+                    log.warning("could not hydrate PR #%s: %s", pr.number, exc)
+                    return None
+
+        fetched = await asyncio.gather(*(one(pr) for pr in needs))
+        by_number = {pr.number: pr for pr in fetched if pr is not None}
+
+        failed = len(needs) - len(by_number)
+        if failed:
+            self.store.log(
+                "hydrate_incomplete",
+                f"{failed} PR(s) could not be checked and were skipped this pass",
+                failed=failed,
+            )
+
+        return [
+            by_number.get(pr.number, pr)
+            for pr in prs
+            if pr.mergeable_state != "unknown" or pr.number in by_number
+        ]
 
     # --------------------------------------------------------------- record
 
@@ -222,7 +270,21 @@ class Orchestrator:
         newly_filed: list[int] = []
 
         for pr, blocker in blocked:
-            item = await self.record(repo, pr, blocker)
+            try:
+                item = await self.record(repo, pr, blocker)
+            except GitHubSetupError as exc:
+                # A setup problem affects every PR equally; failing the whole
+                # sweep once is clearer than 16 identical errors.
+                self.store.log("setup_error", str(exc))
+                log.error("%s", exc)
+                return {
+                    "reason": reason,
+                    "error": str(exc),
+                    "scanned_blocked": len(blocked),
+                    "newly_tracked": 0,
+                    "dispatched": [],
+                    "deferred": [],
+                }
             if item is not None:
                 newly_filed.append(pr.number)
 
@@ -274,8 +336,9 @@ def _read_outcome(session) -> tuple[str, str]:
         return outcome, summary or "(no summary returned)"
 
     if session.needs_human:
+        why = f" ({session.status_detail})" if session.status_detail else ""
         return "failed", summary or (
-            f"Session stopped for human input (status '{session.status}')."
+            f"Session stopped for human input (status '{session.status}'{why})."
         )
     if session.is_success:
         return "succeeded", summary or "Session finished without structured output."

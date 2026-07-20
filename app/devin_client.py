@@ -23,11 +23,17 @@ import httpx
 _SUCCESS = {"finished", "completed", "succeeded", "blocked_finished"}
 _FAILURE = {"expired", "failed", "cancelled", "canceled", "terminated"}
 
-# "blocked" means the agent stopped to ask a human something. For an unattended
-# pipeline that is an outcome, not a waiting room -- nobody is watching the
-# session to answer. Treat it as terminal and escalate, otherwise these items
-# poll forever and quietly inflate the in-flight count.
+# A session that stopped to ask a human something. For an unattended pipeline
+# that is an outcome, not a waiting room -- nobody is watching to answer. Treat
+# it as terminal and escalate, otherwise these items poll forever and quietly
+# inflate the in-flight count.
 _NEEDS_HUMAN = {"blocked", "suspended"}
+
+# The coarse `status` field is NOT sufficient on its own. Observed live: a
+# session that has finished its work and is waiting for a reply still reports
+# `status: "running"` and only reveals itself via `status_detail:
+# "waiting_for_user"`. Polling `status` alone never terminates those.
+_NEEDS_HUMAN_DETAIL = {"waiting_for_user", "blocked", "inactivity"}
 
 
 @dataclass
@@ -38,10 +44,14 @@ class Session:
     acus_consumed: float = 0.0
     structured_output: dict[str, Any] | None = None
     pull_requests: list[dict[str, Any]] | None = None
+    # Why the session is in this status -- e.g. "inactivity" for a suspended
+    # session. Worth surfacing: it distinguishes "the agent asked a question"
+    # from "the agent simply went idle", which need different human responses.
+    status_detail: str | None = None
 
     @property
     def is_terminal(self) -> bool:
-        return self.status.lower() in _SUCCESS | _FAILURE | _NEEDS_HUMAN
+        return self.status.lower() in _SUCCESS | _FAILURE or self.needs_human
 
     @property
     def is_success(self) -> bool:
@@ -49,7 +59,9 @@ class Session:
 
     @property
     def needs_human(self) -> bool:
-        return self.status.lower() in _NEEDS_HUMAN
+        if self.status.lower() in _NEEDS_HUMAN:
+            return True
+        return (self.status_detail or "").lower() in _NEEDS_HUMAN_DETAIL
 
 
 class DevinClient(Protocol):
@@ -221,6 +233,7 @@ def _parse_session(payload: dict[str, Any]) -> Session:
     dashboard.
     """
     status = str(payload.get("status") or payload.get("status_enum") or "unknown")
+    detail = payload.get("status_detail")
     return Session(
         session_id=str(payload.get("session_id", "")),
         url=str(payload.get("url", "")),
@@ -228,6 +241,7 @@ def _parse_session(payload: dict[str, Any]) -> Session:
         acus_consumed=float(payload.get("acus_consumed") or 0),
         structured_output=payload.get("structured_output"),
         pull_requests=payload.get("pull_requests"),
+        status_detail=str(detail) if detail else None,
     )
 
 

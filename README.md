@@ -144,6 +144,28 @@ To receive real webhooks, expose the service and point a GitHub webhook at
 ngrok http 8000     # then use https://<id>.ngrok.app/webhook/github
 ```
 
+### Fork setup, learned the hard way
+
+Two GitHub defaults will stop this dead, and neither produces an obvious error:
+
+- **Issues are disabled on forks by default.** Issue creation returns
+  `410 Gone`. Enable under *Settings → General → Features → Issues*. The
+  client raises `IssuesDisabled` with that instruction rather than surfacing a
+  raw HTTP error.
+- **Fine-grained PATs need explicit per-permission grants**: *Issues: RW*,
+  *Pull requests: RW*, *Contents: RW* (for pushing branches), and
+  *Administration: RW* only if you want the tool to toggle repo settings.
+  A token with repo *read* still reports `admin: true` in the repo payload —
+  that reflects your account, not the token — so test a write before trusting it.
+
+### `mergeable_state` and CI
+
+`unstable` means "mergeable, but a required check is failing", so **a fork with
+no CI configured will never produce an `unstable` PR** — only `dirty`. That is
+fine for the conflict path, which is the dominant blocker in the oldest cohort
+(10 `dirty` vs 9 `unstable`) and the harder problem. To exercise the CI path,
+add any workflow that runs on `pull_request`.
+
 ---
 
 ## Guardrails
@@ -201,10 +223,21 @@ Coverage is concentrated on what would cause real damage: the upstream
 guardrail, dispatch idempotency (duplicate sessions cost money), the
 per-event cap, and outcome classification.
 
-One case worth calling out: Devin's `blocked` status means the agent stopped to
-ask a human something. In an unattended pipeline nobody is there to answer, so
-`blocked` is treated as **terminal and escalated** rather than polled forever —
-otherwise those items inflate the in-flight count indefinitely.
+Three bugs found by running against the live APIs, each now covered by a test —
+worth reading, because all three fail *silently*:
+
+1. **`status` alone never terminates a session.** A Devin session that has
+   finished and is waiting for a reply still reports `status: "running"`; the
+   only signal is `status_detail: "waiting_for_user"`. Polling the coarse field
+   means those items poll forever and quietly inflate the in-flight count.
+   Terminal detection reads both fields.
+2. **The GitHub list-PRs endpoint omits `mergeable_state`.** It is computed
+   lazily and appears only on the single-PR endpoint, so every listed PR reads
+   as `unknown` and nothing is ever detected. `detect()` hydrates each candidate
+   individually, with bounded concurrency.
+3. **`suspended` / `blocked` sessions are terminal for an unattended pipeline.**
+   Nobody is watching to answer the agent's question, so these escalate rather
+   than wait.
 
 ---
 
