@@ -126,12 +126,12 @@ def render_dashboard(
     )
     tiles = [
         ("", metrics["total_tracked"], "PRs tracked"),
-        ("", metrics["in_flight"], "in flight"),
+        ("", metrics["queued"], "queued — awaiting dispatch"),
+        ("", metrics["in_flight"], "in flight — session working"),
         ("ok", metrics["succeeded"], "unblocked, verified"),
         ("crit", metrics["failed"], "need a human"),
         ("", rate_txt, "verified success rate"),
         ("", med_txt, "median time to unblock"),
-        ("", metrics["by_state"].get("issue_filed", 0), "queued for dispatch"),
         ("", acu_txt, acu_label),
     ]
     tiles_html = "".join(

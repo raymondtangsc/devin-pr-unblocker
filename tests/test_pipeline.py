@@ -808,3 +808,22 @@ def test_existing_github_issue_is_adopted_not_duplicated() -> None:
     assert len(gh.issues) == 1, "must not file a second issue for the same PR"
     assert item is not None and item.issue_number == gh.issues[0]["number"]
     assert "issue_adopted" in [e["kind"] for e in second.store.recent_events(10)]
+
+
+def test_queued_and_in_flight_are_distinct() -> None:
+    """A filed issue with no session is queued, not in flight.
+
+    Counting them together made the two dashboard tiles show the same number
+    and hid whether anything was actually running.
+    """
+    gh = MockGitHubClient()
+    orch = Orchestrator(
+        make_cfg(max_dispatches_per_event=2, min_quiet_days=0),
+        Store(":memory:"), gh, MockDevinClient(),
+    )
+    asyncio.run(orch.handle_repo_event(FORK, reason="test"))
+
+    m = orch.store.metrics()
+    assert m["in_flight"] == 2, "only dispatched/running sessions are in flight"
+    assert m["queued"] > 0, "the rest are queued"
+    assert m["queued"] + m["in_flight"] <= m["total_tracked"]

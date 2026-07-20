@@ -233,9 +233,11 @@ class Store:
         return {
             "total_tracked": len(items),
             "by_state": by_state,
-            "in_flight": sum(
-                1 for i in items if i.state in (ISSUE_FILED, DISPATCHED, RUNNING)
-            ),
+            # Queued and in-flight are different things: an issue filed with no
+            # session yet is waiting for capacity, not being worked on. Counting
+            # them together made "in flight" indistinguishable from the backlog.
+            "queued": sum(1 for i in items if i.state == ISSUE_FILED),
+            "in_flight": sum(1 for i in items if i.state in (DISPATCHED, RUNNING)),
             "succeeded": len(succeeded),
             "failed": sum(1 for i in items if i.state == FAILED),
             "success_rate": success_rate,
