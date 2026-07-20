@@ -198,12 +198,17 @@ sensible default.
 - **Devin pushes to the PR branch only.** Never to `master`; never merges,
   approves, or closes.
 - **Drafts are skipped** — the author is still working.
-- **Quiet-period gate** (`MIN_QUIET_DAYS`, default 2): a PR with recent pushes
+- **Quiet-period gate** (`MIN_QUIET_DAYS`, default 3): a PR with recent pushes
   or comments is someone's work in progress, not rot — force-pushing onto it
   would collide with the author's local branch. The system waits until the PR
   has been quiet, and detection doesn't even file an issue for active PRs. The
   manual `devin-unblock` label overrides the gate: a human explicitly asking
   is consent.
+  The gate measures **when the author last pushed**, not `updated_at` — that
+  field bumps on any activity including bot comments, and on this repo bot
+  reviews slightly outnumber human ones, so gating on it would hold the gate
+  closed on PRs nobody has touched in months. A push is what collides with an
+  author's local work; a comment is not.
 - **The dispatch queue drains.** `MAX_DISPATCHES_PER_EVENT` caps sessions per
   sweep/webhook (a spend-rate limit, not a throughput ceiling); items past the
   cap are picked up by later sweeps, oldest PR first.

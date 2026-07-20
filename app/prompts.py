@@ -110,11 +110,13 @@ Branch:      `{pr.head_ref}` -> `{pr.base_ref}`
 Open for:    {pr.age_days:.0f} days
 Link:        {pr.html_url}
 
-Context you should know: this PR has been open for {pr.age_days:.0f} days. The
-contributor has almost certainly moved on, so nobody is coming to answer
-questions. The work itself was reviewed and wanted — it stalled on mechanics,
-not on merit. Your job is to restore it to a state where a maintainer can make a
-decision about it.
+Context you should know: this PR has been open for {pr.age_days:.0f} days and its
+author last pushed {pr.quiet_days:.0f} days ago. It is stalled, not abandoned —
+reviewers may still be discussing it, and the author may well return. So treat
+the contributor's work as theirs: preserve their intent exactly, change nothing
+beyond what unblocking requires, and leave a branch they would recognise as
+their own. It stalled on mechanics, not on merit. Your job is to restore it to a
+state where a maintainer can make a decision about it.
 {task.format(**fmt)}{_SHARED_RULES.format(**fmt)}
 
 When you are done, return structured output with `outcome` set to `succeeded`,

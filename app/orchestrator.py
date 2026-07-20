@@ -15,6 +15,7 @@ dictionary lookup. Devin is spent only on the part that needs judgement.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 
 from . import store as st
@@ -55,14 +56,10 @@ class Orchestrator:
         candidates = [pr for pr in prs if not pr.draft]
         hydrated = await self._hydrate(repo, candidates)
 
-        # Quiet-period gate: a PR with recent activity is someone's work in
-        # progress. Touching it -- worse, force-pushing onto it -- would collide
-        # with the author's local branch. Rot takes weeks; we can wait days.
-        quiet = [
-            pr
-            for pr in hydrated
-            if not pr.draft and pr.quiet_days >= self.cfg.min_quiet_days
-        ]
+        # Quiet-period gate, applied AFTER classification so the extra
+        # per-PR call is paid only for the blocked set, not all 376.
+        quiet = [pr for pr in hydrated if not pr.draft]
+        quiet = await self._apply_quiet_gate(repo, quiet)
         active = sum(1 for pr in hydrated if not pr.draft) - len(quiet)
         if active:
             self.store.log(
@@ -94,6 +91,30 @@ class Orchestrator:
             awaiting_review=awaiting_review,
         )
         return blocked
+
+    async def _apply_quiet_gate(
+        self, repo: str, prs: list[PullRequest], concurrency: int = 8
+    ) -> list[PullRequest]:
+        """Drop PRs whose author pushed recently -- they're mid-work, not rot.
+
+        The push time needs one extra call per PR, so it is fetched with
+        bounded concurrency and only for candidates that reached this point.
+        """
+        if self.cfg.min_quiet_days <= 0:
+            return prs
+        sem = asyncio.Semaphore(concurrency)
+
+        async def stamped(pr: PullRequest) -> PullRequest:
+            async with sem:
+                try:
+                    when = await self.github.head_committed_at(repo, pr.head_sha)
+                except Exception as exc:
+                    log.warning("no push time for PR #%s: %s", pr.number, exc)
+                    return pr  # falls back to updated_at -- over-protects
+                return PullRequest(**{**pr.__dict__, "head_committed_at": when})
+
+        stamped_prs = await asyncio.gather(*(stamped(pr) for pr in prs))
+        return [pr for pr in stamped_prs if pr.quiet_days >= self.cfg.min_quiet_days]
 
     async def classify(self, repo: str, pr: PullRequest) -> str | None:
         """Decide whether a PR is blocked on something mechanical.
@@ -226,6 +247,10 @@ class Orchestrator:
             return item
 
         pr = await self.github.get_pr(repo, pr_number)
+        if not force and self.cfg.min_quiet_days > 0:
+            with contextlib.suppress(Exception):
+                when = await self.github.head_committed_at(repo, pr.head_sha)
+                pr = PullRequest(**{**pr.__dict__, "head_committed_at": when})
         if not force and pr.quiet_days < self.cfg.min_quiet_days:
             # Author is actively pushing; stay out of their way. The item stays
             # queued and a later sweep re-tries once the branch goes quiet.

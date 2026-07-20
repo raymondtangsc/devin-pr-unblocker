@@ -660,3 +660,45 @@ def test_webhook_routes_only_the_label_event() -> None:
                                   {"action": "opened", "pull_request": {"number": 28627}}, FORK))
     assert "ignored" in push and "ignored" in pr
     assert not orch.store.all_items(), "non-label events must not trigger work"
+
+
+def test_quiet_gate_measures_pushes_not_comments() -> None:
+    """updated_at bumps on bot comments; only a push collides with an author.
+
+    On this repo bot reviews slightly outnumber human ones, so gating on
+    updated_at would hold the gate closed on PRs nobody has touched in months.
+    """
+    import time as _t
+
+    from app.github_client import PullRequest
+
+    recent = _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.localtime(_t.time() - 3600))
+    old = _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.localtime(_t.time() - 40 * 86400))
+
+    gh = MockGitHubClient()
+    # A bot commented an hour ago, but the author last pushed 40 days ago.
+    gh._prs[28627] = PullRequest(
+        **{**gh._prs[28627].__dict__, "updated_at": recent, "head_sha": "abc"}
+    )
+    gh.pushed_by_sha = {"abc": old}
+
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    blocked = asyncio.run(orch.detect(FORK))
+    assert 28627 in {pr.number for pr, _ in blocked}, (
+        "recent bot chatter must not look like work in progress"
+    )
+
+
+def test_quiet_gate_still_blocks_a_real_recent_push() -> None:
+    import time as _t
+
+    from app.github_client import PullRequest
+
+    recent = _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.localtime(_t.time() - 3600))
+    gh = MockGitHubClient()
+    gh._prs[28627] = PullRequest(**{**gh._prs[28627].__dict__, "head_sha": "abc"})
+    gh.pushed_by_sha = {"abc": recent}
+
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    blocked = asyncio.run(orch.detect(FORK))
+    assert 28627 not in {pr.number for pr, _ in blocked}

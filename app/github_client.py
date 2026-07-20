@@ -66,6 +66,8 @@ class PullRequest:
     base_ref: str
     html_url: str
     head_sha: str = ""
+    # ISO timestamp of the head commit -- when the author last pushed.
+    head_committed_at: str = ""
     # GitHub's boolean verdict, distinct from the coarse mergeable_state string.
     # None while GitHub is still computing it.
     mergeable: bool | None = None
@@ -77,9 +79,19 @@ class PullRequest:
 
     @property
     def quiet_days(self) -> float:
-        """Days since the PR last saw any activity (pushes, comments, edits)."""
-        updated = time.mktime(time.strptime(self.updated_at, "%Y-%m-%dT%H:%M:%SZ"))
-        return round((time.time() - updated) / 86400, 2)
+        """Days since the author last PUSHED to this branch.
+
+        Deliberately not ``updated_at``: that field bumps on any activity,
+        including bot comments -- and on this repo bot reviews slightly
+        outnumber human ones, so ``updated_at`` would hold the gate closed on
+        PRs nobody has touched in months. What actually collides with an
+        author's local work is a push, so that is what we measure. Falls back
+        to ``updated_at`` when the head commit date is unavailable, which is
+        conservative (it can only over-protect).
+        """
+        stamp = self.head_committed_at or self.updated_at
+        pushed = time.mktime(time.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ"))
+        return round((time.time() - pushed) / 86400, 2)
 
     @property
     def blocker(self) -> str | None:
@@ -104,6 +116,7 @@ class GitHubClient(Protocol):
     ) -> int: ...
     async def comment(self, repo: str, issue_number: int, body: str) -> None: ...
     async def failing_checks(self, repo: str, sha: str) -> list[str]: ...
+    async def head_committed_at(self, repo: str, sha: str) -> str: ...
     @property
     def mode(self) -> str: ...
 
@@ -197,6 +210,18 @@ class LiveGitHubClient:
             )
             r.raise_for_status()
 
+    async def head_committed_at(self, repo: str, sha: str) -> str:
+        """When the head commit was pushed -- the real 'is a human working' signal."""
+        self._guard(repo)
+        if not sha:
+            return ""
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.get(
+                f"{API}/repos/{repo}/commits/{sha}", headers=self._headers
+            )
+            r.raise_for_status()
+            return str(r.json()["commit"]["committer"]["date"])
+
     async def failing_checks(self, repo: str, sha: str) -> list[str]:
         """Names of check runs that concluded in failure for this commit.
 
@@ -238,6 +263,7 @@ class MockGitHubClient:
             p["number"]: _parse_pr(p) for p in json.loads(Path(path).read_text())
         }
         self.failing_by_sha: dict[str, list[str]] = {}
+        self.pushed_by_sha: dict[str, str] = {}
         self.issues: list[dict[str, Any]] = []
         self.comments: list[dict[str, Any]] = []
         self._next_issue = 9000
@@ -282,6 +308,9 @@ class MockGitHubClient:
     async def failing_checks(self, repo: str, sha: str) -> list[str]:
         # Fixture PRs keyed by head_sha; default to "no failures".
         return list(self.failing_by_sha.get(sha, []))
+
+    async def head_committed_at(self, repo: str, sha: str) -> str:
+        return self.pushed_by_sha.get(sha, "")
 
 
 def _parse_pr(d: dict[str, Any]) -> PullRequest:
