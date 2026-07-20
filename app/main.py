@@ -215,7 +215,8 @@ async def _route_event(orch, cfg, event: str, payload: dict, repo: str) -> dict:
         pr_number = _pr_number_from_issue(issue)
         if pr_number is None:
             return {"ignored": "labelled issue does not reference a PR"}
-        item = await orch.dispatch(repo, pr_number)
+        # A human applying the label is explicit consent -- bypass the quiet gate.
+        item = await orch.dispatch(repo, pr_number, force=True)
         return {
             "pr": pr_number,
             "dispatched": bool(item and item.session_id),

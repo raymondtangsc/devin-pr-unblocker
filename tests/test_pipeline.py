@@ -34,6 +34,8 @@ def make_cfg(**over) -> Config:
         trigger_label="devin-unblock",
         max_dispatches_per_event=3,
         db_path=":memory:",
+        poll_interval_seconds=0,
+        min_quiet_days=2.0,
     )
     base.update(over)
     return Config(**base)
@@ -565,3 +567,79 @@ def test_sweep_detects_and_is_idempotent_across_cycles() -> None:
     tracked = orch.store.all_items()
     assert len(tracked) == len({i.pr_number for i in tracked})
     assert len(gh.issues) == len(tracked), "one issue per PR, despite repeat sweeps"
+
+
+# ------------------------------------------------------------ quiet-period gate
+
+
+def _make_recent(gh: MockGitHubClient, number: int) -> None:
+    """Mark a fixture PR as pushed-to moments ago (work in progress)."""
+    import time as _t
+
+    from app.github_client import PullRequest
+
+    now = _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.localtime(_t.time() - 3600))
+    gh._prs[number] = PullRequest(**{**gh._prs[number].__dict__, "updated_at": now})
+
+
+def test_active_pr_is_not_dispatched() -> None:
+    """A PR its author is still pushing to must not be rebased under them.
+
+    Force-pushing onto an actively developed branch collides with the author's
+    local work -- the worst possible first contact with the tool.
+    """
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    _make_recent(gh, 28627)
+    orch.store.upsert_detected(
+        st.WorkItem(28627, FORK, "t", "a", "conflict", 9.0, st.DETECTED)
+    )
+    item = asyncio.run(orch.dispatch(FORK, 28627))
+    assert item.session_id is None, "must defer while the author is active"
+    assert item.state == st.DETECTED
+    kinds = [e["kind"] for e in orch.store.recent_events(10)]
+    assert "quiet_deferred" in kinds
+
+
+def test_manual_label_overrides_quiet_gate() -> None:
+    """A human applying the label is explicit consent -- force dispatch."""
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    _make_recent(gh, 28627)
+    orch.store.upsert_detected(
+        st.WorkItem(28627, FORK, "t", "a", "conflict", 9.0, st.DETECTED)
+    )
+    item = asyncio.run(orch.dispatch(FORK, 28627, force=True))
+    assert item.session_id, "explicit human request must bypass the gate"
+
+
+def test_active_prs_are_not_even_tracked() -> None:
+    """Detection skips active PRs entirely -- no issue spam for work in progress."""
+    gh = MockGitHubClient()
+    orch = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    _make_recent(gh, 28627)
+    blocked = asyncio.run(orch.detect(FORK))
+    assert 28627 not in {pr.number for pr, _ in blocked}
+
+
+def test_sweep_drains_previously_deferred_queue() -> None:
+    """Items deferred past the cap must be dispatched by later sweeps.
+
+    Without drainage, anything past the per-event cap waits forever for a
+    manual label -- the queue would silently never empty.
+    """
+    from app.devin_client import DemoWorld
+
+    world = DemoWorld()
+    orch = Orchestrator(
+        make_cfg(max_dispatches_per_event=2),
+        Store(":memory:"),
+        MockGitHubClient(world=world),
+        MockDevinClient(world=world),
+    )
+    first = asyncio.run(orch.handle_repo_event(FORK, reason="sweep 1"))
+    assert len(first["dispatched"]) == 2 and first["deferred"]
+
+    second = asyncio.run(orch.handle_repo_event(FORK, reason="sweep 2"))
+    assert len(second["dispatched"]) == 2, "later sweeps must drain the queue"
+    assert set(second["dispatched"]) <= set(first["deferred"])

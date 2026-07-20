@@ -76,6 +76,14 @@ class Config:
     poll_interval_seconds: int = field(
         default_factory=lambda: _env_int("POLL_INTERVAL_SECONDS", 600)
     )
+    # A PR with recent activity is someone's work in progress, not rot. The
+    # system only touches PRs quiet for at least this many days -- force-pushing
+    # onto a branch whose author is actively pushing would collide with their
+    # local work. 0 disables (demo mode). The manual label overrides this gate:
+    # a human explicitly asking is consent.
+    min_quiet_days: float = field(
+        default_factory=lambda: float(_env("MIN_QUIET_DAYS", "2") or 2)
+    )
 
     @property
     def live_devin(self) -> bool:

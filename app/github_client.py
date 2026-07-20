@@ -76,6 +76,12 @@ class PullRequest:
         return round((time.time() - created) / 86400, 1)
 
     @property
+    def quiet_days(self) -> float:
+        """Days since the PR last saw any activity (pushes, comments, edits)."""
+        updated = time.mktime(time.strptime(self.updated_at, "%Y-%m-%dT%H:%M:%SZ"))
+        return round((time.time() - updated) / 86400, 2)
+
+    @property
     def blocker(self) -> str | None:
         """Why this PR cannot merge, when that is knowable from this field alone.
 

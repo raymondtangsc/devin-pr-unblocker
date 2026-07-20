@@ -55,19 +55,34 @@ class Orchestrator:
         candidates = [pr for pr in prs if not pr.draft]
         hydrated = await self._hydrate(repo, candidates)
 
-        classified = await asyncio.gather(
-            *(self.classify(repo, pr) for pr in hydrated if not pr.draft)
-        )
+        # Quiet-period gate: a PR with recent activity is someone's work in
+        # progress. Touching it -- worse, force-pushing onto it -- would collide
+        # with the author's local branch. Rot takes weeks; we can wait days.
+        quiet = [
+            pr
+            for pr in hydrated
+            if not pr.draft and pr.quiet_days >= self.cfg.min_quiet_days
+        ]
+        active = sum(1 for pr in hydrated if not pr.draft) - len(quiet)
+        if active:
+            self.store.log(
+                "quiet_gate",
+                f"{active} blocked-or-candidate PR(s) skipped: active within "
+                f"{self.cfg.min_quiet_days} day(s); will pick up once quiet",
+                active=active,
+            )
+
+        classified = await asyncio.gather(*(self.classify(repo, pr) for pr in quiet))
         blocked = [
             (pr, blocker)
-            for pr, blocker in zip([p for p in hydrated if not p.draft], classified)
+            for pr, blocker in zip(quiet, classified)
             if blocker is not None
         ]
         blocked.sort(key=lambda pair: pair[0].age_days, reverse=True)
 
         awaiting_review = sum(
             1
-            for pr, blocker in zip([p for p in hydrated if not p.draft], classified)
+            for pr, blocker in zip(quiet, classified)
             if blocker is None and pr.mergeable_state == "blocked"
         )
         self.store.log(
@@ -186,8 +201,15 @@ class Orchestrator:
 
     # ------------------------------------------------------------- dispatch
 
-    async def dispatch(self, repo: str, pr_number: int) -> WorkItem | None:
-        """Start a Devin session for one blocked PR."""
+    async def dispatch(
+        self, repo: str, pr_number: int, force: bool = False
+    ) -> WorkItem | None:
+        """Start a Devin session for one blocked PR.
+
+        ``force=True`` bypasses the quiet-period gate -- used by the manual
+        label path, where a human explicitly pointing the teammate at a PR is
+        consent to work on it.
+        """
         self.cfg.assert_repo_allowed(repo)
 
         item = self.store.get(pr_number)
@@ -204,6 +226,16 @@ class Orchestrator:
             return item
 
         pr = await self.github.get_pr(repo, pr_number)
+        if not force and pr.quiet_days < self.cfg.min_quiet_days:
+            # Author is actively pushing; stay out of their way. The item stays
+            # queued and a later sweep re-tries once the branch goes quiet.
+            self.store.log(
+                "quiet_deferred",
+                f"PR #{pr_number} active {pr.quiet_days:.1f}d ago (< "
+                f"{self.cfg.min_quiet_days}d quiet); deferring dispatch",
+                pr_number=pr_number,
+            )
+            return item
         blocker = await self.classify(repo, pr)
         if blocker is None:
             reason = (
@@ -384,9 +416,18 @@ class Orchestrator:
                 newly_filed.append(pr.number)
 
         # Cap auto-dispatch per event. Without a ceiling, the first run against a
-        # 376-PR backlog would open hundreds of concurrent sessions.
-        to_dispatch = newly_filed[: self.cfg.max_dispatches_per_event]
-        deferred = newly_filed[self.cfg.max_dispatches_per_event :]
+        # 376-PR backlog would open hundreds of concurrent sessions. The queue
+        # includes items deferred by earlier events -- otherwise anything past
+        # the cap would wait forever for a manual label.
+        queued = [
+            i.pr_number
+            for i in self.store.by_state(st.ISSUE_FILED)
+            if not i.session_id
+        ]
+        # newly filed first (freshest detection), then the standing queue
+        ordered = newly_filed + [n for n in queued if n not in newly_filed]
+        to_dispatch = ordered[: self.cfg.max_dispatches_per_event]
+        deferred = ordered[self.cfg.max_dispatches_per_event :]
 
         results = await asyncio.gather(
             *(self.dispatch(repo, n) for n in to_dispatch), return_exceptions=True
