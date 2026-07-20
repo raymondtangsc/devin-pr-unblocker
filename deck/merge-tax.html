@@ -1,4 +1,4 @@
-<title>The Merge Tax — hiring a teammate for mechanical PR work</title>
+<title>PR Rot — hiring a Devin teammate for mechanical PR work</title>
 
 <style>
   :root {
@@ -243,15 +243,34 @@
 <div id="pace"></div>
 <button id="notesbtn" type="button" aria-pressed="false">notes · N</button>
 
+<!-- ============ 0 · TITLE ============ -->
+<section class="beat">
+  <div class="wrap">
+    <div class="eyebrow"><span>a Devin API demo</span><span class="t">0:00 – 0:15</span></div>
+    <h1 style="font-size:clamp(3rem,7vw,5rem)">PR rot.</h1>
+    <p class="lede" style="margin-top:1.2rem;max-width:52ch">Every busy repository quietly
+      loses finished work to merge conflicts and red CI. We adapted Devin — in hours —
+      into a teammate that gets it back.</p>
+    <p style="margin-top:2rem;font-family:var(--mono);font-size:.82rem;color:var(--ink-3)">
+      Raymond Tang &nbsp;·&nbsp; live system, real data — measured on apache/superset</p>
+    <div class="notes"><span class="win">0:00 – 0:15 · ~40 words</span>
+      Hi, I'm Raymond. Today I want to show how easily Devin adapts to a problem every
+      busy repository has — PR rot: pull requests that quietly stop being mergeable and
+      die. Everything you'll see is a live system, and every number comes from a real
+      codebase.
+    </div>
+  </div>
+</section>
+
 <!-- ============ 1 · HOOK ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>What · beat 1 of 9</span><span class="t">0:00 – 0:35</span></div>
-    <h1>Your pull requests are racing your main branch.<br>The longer they wait, the more of them lose.</h1>
-    <p class="lede" style="margin-top:1.1rem">While a PR waits for review, main keeps moving.
-    Past a point it <strong>can no longer merge</strong> — conflicts, broken checks — and the
-    finished work inside it starts to rot. Someone has to pay: <em class="hl">rebase it, fix it,
-    or lose it</em>.</p>
+    <div class="eyebrow"><span>What · beat 1</span><span class="t">0:15 – 0:50</span></div>
+    <h2 style="font-size:clamp(1.9rem,3.8vw,2.9rem)">What is PR rot?</h2>
+    <p class="lede">A pull request is a race against your main branch. While it waits for
+    review, main keeps moving — and past a point the PR <strong>can no longer merge</strong>:
+    conflicts, broken checks. The finished work inside it starts to rot.
+    Someone has to pay: <em class="hl">rebase it, fix it, or lose it</em>.</p>
     <div class="diverge" role="img" aria-label="Diagram: main branch advancing with commits while a PR branch stands still; the gap between them widens and turns red">
       <svg viewBox="0 0 800 260">
         <polygon points="70,200 740,200 740,70" fill="var(--crit)" opacity="0.09"/>
@@ -271,11 +290,11 @@
     </div>
     <span class="formula">P(stuck) &nbsp;≈&nbsp; <b>time open</b> × main churn × diff size
       &nbsp;&nbsp;<span style="color:var(--ink-3)">— physics, not process failure. Every concurrent team pays it.</span></span>
-    <div class="notes"><span class="win">0:00 – 0:35 · ~55 words</span>
-      Here's the problem in one sentence: while a pull request waits for review, main
-      keeps moving — and past a point the PR can't merge any more. Conflicts, broken
+    <div class="notes"><span class="win">0:15 – 0:50 · ~55 words</span>
+      What is PR rot? A pull request is a race against main. While it waits for review,
+      main keeps moving — and past a point it can't merge any more. Conflicts, broken
       checks. Finished work, rotting in the queue. Someone pays: rebase it, fix it, or
-      lose it. That's physics, not process — and we measured exactly what it costs.
+      lose it. It's physics, not bad process — and we measured exactly what it costs.
     </div>
   </div>
 </section>
@@ -283,7 +302,7 @@
 <!-- ============ 2 · SCALE ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>What · beat 2</span><span class="t">0:35 – 1:15</span></div>
+    <div class="eyebrow"><span>What · beat 2</span><span class="t">0:50 – 1:25</span></div>
     <h2>We measured it — on a repo you can verify.</h2>
     <p class="lede">Apache Superset: a hot, public codebase. <strong>3,121 commits in seven months, 349 authors,</strong> main moves ~7×/day. Big enough that the physics is impossible to miss.</p>
     <div class="bignum">62%<small>&nbsp; of 376 open PRs can't merge — for mechanical reasons</small></div>
@@ -302,7 +321,7 @@
     <div class="foot">Measured 2026-07-20 across all 376 open PRs via the GitHub REST API
       (mergeable_state per PR, check-runs per head commit, retried until computed).
       Reproducible from a laptop in ~10 minutes — no vendor benchmarks anywhere in this deck.</div>
-    <div class="notes"><span class="win">0:35 – 1:15 · ~65 words</span>
+    <div class="notes"><span class="win">0:50 – 1:25 · ~65 words</span>
       We can't measure your repo, so we measured one anyone can verify: Apache
       Superset — thirty-one hundred commits this year, 349 contributors. Of its 376
       open PRs, 62 percent cannot merge for purely mechanical reasons: 145 have
@@ -316,7 +335,7 @@
 <!-- ============ 3 · VALUE ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>What · beat 3</span><span class="t">1:15 – 1:55</span></div>
+    <div class="eyebrow"><span>What · beat 3</span><span class="t">1:25 – 2:00</span></div>
     <p class="objection">“If nobody bothered to fix them… aren't they just not worth merging?”</p>
     <div class="counters">
       <div class="counter"><span class="n">01</span>
@@ -345,7 +364,7 @@
       (550 human-authored). That sample skews recent, so true abandonment is likely worse.
       Conflict rate triples between month one (17%) and month two (51%) — the decay and the
       conflicts are the same phenomenon.</div>
-    <div class="notes"><span class="win">1:15 – 1:55 · ~70 words</span>
+    <div class="notes"><span class="win">1:25 – 2:00 · ~70 words</span>
       Fair objection: maybe stuck PRs just aren't worth merging. Three answers. Reviewers
       triage green-first — a conflicted PR never enters the queue; red is unread, not
       rejected. For a small fix, re-greening costs more than the patch did, so rational
@@ -358,7 +377,7 @@
 <!-- ============ 4 · SOLUTION ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>How · beat 4</span><span class="t">1:55 – 2:20</span></div>
+    <div class="eyebrow"><span>How · beat 4</span><span class="t">2:00 – 2:25</span></div>
     <h2>So we hired a teammate for exactly this work.</h2>
     <p class="lede">Not a helper someone drives — a teammate that gets <strong>assigned</strong> the mechanical backlog and owns it end to end. Built on the Devin API.</p>
     <div class="pipewrap">
@@ -393,7 +412,7 @@
     <div class="foot">Trigger design: webhooks are edge-triggered and lossy — a dropped delivery
       would mean a PR silently never gets rescued. The scheduled sweep re-derives the blocked
       set from actual repo state every cycle, so a missed webhook costs latency, not coverage.</div>
-    <div class="notes"><span class="win">1:55 – 2:20 · ~55 words</span>
+    <div class="notes"><span class="win">2:00 – 2:25 · ~55 words</span>
       So we hired a teammate for exactly this work. Events come in two ways — webhooks for
       speed, a scheduled sweep as the source of truth, because webhooks get dropped. Detection
       is deterministic, no model. Each blocked PR gets a tracking issue, then one budget-capped
@@ -405,7 +424,7 @@
 <!-- ============ 5 · DEMO ============ -->
 <section class="beat">
   <div class="wrap">
-    <div class="eyebrow"><span>How · beat 5 · demo</span><span class="t">2:20 – 3:10</span></div>
+    <div class="eyebrow"><span>How · beat 5 · demo</span><span class="t">2:25 – 3:10</span></div>
     <h2>Watch it rescue a 404-day-old contribution.</h2>
     <div class="demosteps">
       <div><b>Issue labelled</b><p>The tracking issue gets <code>devin-unblock</code> —
@@ -421,7 +440,7 @@
     <div class="foot">Demo PRs are real upstream contributions (apache/superset #33562, #34629 —
       404 and 310 days old) replayed onto our fork with their genuine conflicts intact.
       The conflicts Devin resolves are the ones that actually defeated these PRs upstream.</div>
-    <div class="notes"><span class="win">2:20 – 3:10 · demo VO, ~60 words</span>
+    <div class="notes"><span class="win">2:25 – 3:10 · demo VO, ~55 words</span>
       This PR is a real contribution — Italy map regions, open 404 days upstream, dead on a
       3-file conflict. I label the issue: that's the spend gate. A session spawns with a hard
       ACU cap. Devin rebases, resolves preserving the contributor's intent, pushes. The system
