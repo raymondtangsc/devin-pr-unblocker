@@ -1,116 +1,31 @@
 # Devin PR Unblocker
 
-An event-driven automation that finds pull requests blocked on **mechanical**
-problems — merge conflicts and red CI — and dispatches a Devin session to fix
-each one, so maintainer review time is spent on judgement instead of rebases.
+Finds pull requests blocked on **mechanical** problems — merge conflicts and red CI —
+and dispatches a Devin session to fix each one, so reviewer time is spent on
+judgement instead of rebases.
 
 It never merges, approves, or closes anything. It moves a PR from *"blocked on
 mechanical work"* to *"needs a human decision."*
 
 ---
 
-## Why this problem
-
-Built after profiling `apache/superset`: 8,000 commits, 376 open PRs, 269 open
-issues. Every figure below is reproducible from `git log` and the public GitHub
-REST API.
-
-| Finding | Value |
-|---|---|
-| Open PRs | **376**, median age **71 days**, 43% older than 90 days |
-| Authors holding those PRs | 192 — and **151 have exactly one** (drive-by contributors) |
-| Oldest PRs mechanically blocked | **86%** (10 conflicted, 9 red CI, 3 clean of 22 sampled) |
-| Newest PRs mechanically blocked | **42%** — mostly red CI, not yet conflicted |
-| Time to merge, dependabot | median **0.21 d** (5 hours), p90 0.7 d |
-| Time to merge, human-authored | median **3.34 d**, p90 **55.4 d**, 18% over a month |
-
-The two-lane split is the whole argument. Dependabot's PRs are not reviewed more
-leniently — they merge in five hours because **nothing mechanical ever blocks
-them**: conflict → auto-rebase, red CI → regenerate. Superset already ran this
-experiment 1,486 times. Remove mechanical friction and merge time collapses ~16×.
-
-PRs don't get rejected here. They **rot**: a PR waits for review, `master` moves
-underneath it (~7 commits/day), it goes `dirty`, and now only the original author
-can fix it — who, months later, is gone. Every merge into `master` manufactures
-more of this, which is why it is recurring work rather than a one-off cleanup.
-
-### Why not a script, and why not CI?
-
-- **Detection** *is* a script here — an API query and a dictionary lookup, no
-  model involved. Spending an agent on detection would be silly.
-- **Resolution** is not. `git rebase` takes you to the conflict and stops.
-  Deciding what happens when a contributor rewrote a function that `master`
-  refactored underneath them requires understanding both intents.
-- **CI reports red. It cannot turn it green.** And CI is the wrong instrument
-  for the already-conflicted PRs: they don't fail a check, they simply cannot be
-  merged.
-
----
-
-## Architecture
-
-```
-  triggers                      scheduled sweep (autonomous) · issues.labeled (human)
-       │
-       ▼
-  detect()        classify open PRs by mergeable_state          deterministic
-       │            dirty → conflict     unstable → failing_ci   (no LLM)
-       ▼
-  record()        file ONE tracking issue per blocked PR         audit trail
-       │            labelled `devin-unblock`                     + approval gate
-       ▼
-  dispatch()      one Devin session per PR, ACU-capped           the agent
-       │            prompt: rebase / resolve / fix CI / push
-       ▼
-  reconcile()     poll sessions → terminal state                 background loop
-       │            comment the verdict back on the issue
-       ▼
-  dashboard       success rate · time-to-unblock · ACUs/success
-```
-
-Why an issue in the middle: the trigger is repository activity, but the issue is
-the durable work item, the audit record, and the spend gate. A maintainer can
-also apply the label by hand to point Devin at any PR.
-
-**Trigger design — discovery is sweep-only; the one webhook is the human.**
-The scheduled sweep (`POLL_INTERVAL_SECONDS`, default 600) re-derives the
-blocked set from actual repo state every cycle — level-triggered and
-idempotent, the same reconciliation argument Kubernetes is built on. Push
-webhooks were deliberately removed: the quiet-period gate waits days for a PR
-to go stale, so the seconds a push webhook saves are meaningless, while the
-sweep guarantees coverage with zero inbound surface. The single webhook this
-service accepts is `issues.labeled` — a human pointing at a PR and expecting
-action now, the one path where latency matters (and the label bypasses the
-quiet gate: explicit ask is consent).
-
-| File | Role |
-|---|---|
-| `app/config.py` | Config + the upstream-repo guardrail |
-| `app/github_client.py` | GitHub REST + fixture-backed mock |
-| `app/devin_client.py` | Devin v3 API + deterministic mock |
-| `app/prompts.py` | Session prompts (treated as code, not string literals) |
-| `app/orchestrator.py` | detect → record → dispatch → reconcile |
-| `app/main.py` | FastAPI: webhook, `/metrics`, `/simulate` |
-| `app/dashboard.py` | Operator dashboard |
-| `app/store.py` | SQLite state machine + metrics |
-
----
-
-## Quick start
+## Run it
 
 Runs **fully offline in mock mode** — no Devin key, no GitHub token, no network.
 
 ### Docker
 
 ```bash
+git clone https://github.com/raymondtangsc/devin-pr-unblocker && cd devin-pr-unblocker
 cp .env.example .env          # works as-is for the mock demo
 docker compose up --build
-# in another shell:
+
+# in a second shell:
 bash scripts/demo.sh
 open http://localhost:8000/
 ```
 
-### Local
+### Local (no Docker)
 
 ```bash
 python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
@@ -119,104 +34,169 @@ cp .env.example .env
 bash scripts/demo.sh
 ```
 
-`scripts/demo.sh` fires a simulated push, shows the guardrail rejecting an event
-aimed at upstream, labels three tracking issues, then waits for every session to
-reach a terminal state and prints the metrics.
+### What the demo does
+
+`scripts/demo.sh` walks the whole workflow and prints each step:
+
+1. **A sweep fires** — detection finds every mechanically blocked PR in a fixture of
+   22 real stuck PRs captured from `apache/superset`, and files one tracking issue each.
+2. **The guardrail refuses** an event aimed at upstream `apache/superset` → `403`.
+3. **A maintainer labels three issues** — the human path, which dispatches immediately.
+4. **Sessions run and settle**, and the script waits for every one to reach a terminal
+   state before printing the metrics.
+
+Expected output — roughly:
+
+```
+tracked            16
+unblocked           6
+needing a human     1
+success rate       86%
+median unblock     13s
+blockers           {'conflict': 8, 'failing_ci': 8}
+```
+
+The mock agent deliberately escalates every 4th session. A demo where nothing ever
+fails teaches you nothing about how failures surface.
+
+### Poke at it directly
+
+```bash
+curl -XPOST localhost:8000/simulate          # run a sweep now
+curl -s   localhost:8000/metrics             # JSON metrics
+curl -s   localhost:8000/healthz             # mode + target repo
+open      http://localhost:8000/             # dashboard, auto-refreshing
+```
+
+Fire the human path by hand — this is the one webhook the service accepts:
+
+```bash
+curl -XPOST localhost:8000/webhook/github \
+  -H 'X-GitHub-Event: issues' -H 'Content-Type: application/json' \
+  -d '{"action":"labeled","label":{"name":"devin-unblock"},
+       "issue":{"number":900,"title":"Unblock PR #28627: demo"},
+       "repository":{"full_name":"raymondtangsc/superset"}}'
+```
+
+### Tests
+
+```bash
+./.venv/bin/python -m pytest -q
+```
 
 ---
 
-## Going live
+## Run it for real
 
-Mock mode exists so the pipeline is demonstrable without spend. To run for real,
-fill in `.env`:
+No code changes — fill in `.env` and restart:
 
 ```bash
 DEVIN_API_KEY=cog_...        # service-user key
-DEVIN_ORG_ID=...             # Settings > Service Users in the Devin dashboard
-GITHUB_TOKEN=ghp_...         # repo scope
+DEVIN_ORG_ID=org-...         # Settings > Service Users in the Devin dashboard
+GITHUB_TOKEN=github_pat_...  # Issues RW, Pull requests RW, Contents RW
 GITHUB_REPO=<you>/superset   # your fork -- never upstream
-GITHUB_WEBHOOK_SECRET=...    # optional; enforced when set
 ```
 
-No code changes. `DEVIN_MODE=auto` (the default) uses the live API as soon as
-both `DEVIN_API_KEY` and `DEVIN_ORG_ID` are present, and falls back to mock
-otherwise. `DEVIN_MODE=live` refuses to start without them rather than silently
-pretending to dispatch work.
+`DEVIN_MODE=auto` (the default) goes live as soon as both Devin values are present and
+falls back to mock otherwise. `DEVIN_MODE=live` refuses to start without them rather
+than silently pretending to dispatch work.
 
-> **Both values are required.** `cog_`-prefixed keys authenticate against the v3
-> API, where every route is org-scoped: `/v3/organizations/{org_id}/sessions`.
-> A valid key with a missing or wrong org id returns `404 Organization not
-> found` — which is how you tell it apart from a bad key (`403 Unauthorized`).
+> **Both Devin values are required.** `cog_`-prefixed keys authenticate against the v3
+> API, where every route is org-scoped: `/v3/organizations/{org_id}/sessions`. A valid
+> key with a missing org id returns `404 Organization not found` — which is how you
+> tell it apart from a bad key (`403 Unauthorized`).
+
+### Knobs
+
+| Variable | Default | What it does |
+|---|---|---|
+| `MAX_DISPATCHES_PER_EVENT` | `3` | Sessions started per sweep. A spend **rate limit**, not a ceiling — the queue drains over later sweeps. `0` = detect only, spend nothing. |
+| `POLL_INTERVAL_SECONDS` | `600` | Sweep cadence. `0` = webhook-only. |
+| `MIN_QUIET_DAYS` | `3` | Only touch PRs whose author has not pushed for this long. Fractions work (`0.0007` ≈ 1 min, for demos). |
+| `DEVIN_MAX_ACU` | `10` | Hard per-session spend ceiling. |
+| `SKIP_WHEN_MASTER_RED` | `true` | Don't chase checks already failing on `master`. |
+| `GITHUB_WEBHOOK_SECRET` | — | HMAC verification; enforced when set. |
+
+### Two GitHub defaults that will stop you
+
+- **Issues are disabled on forks.** Issue creation returns `410 Gone`. Enable under
+  *Settings → General → Features → Issues*. The client raises `IssuesDisabled` with
+  that instruction rather than a raw HTTP error.
+- **Fine-grained PATs need explicit per-permission grants.** A token with repo *read*
+  still reports `admin: true` in the repo payload — that reflects your account, not the
+  token — so test a write before trusting it.
 
 To receive the label webhook, expose the service and point a GitHub webhook at
 `POST /webhook/github` for the **issues** event only:
 
 ```bash
-ngrok http 8000     # then use https://<id>.ngrok.app/webhook/github
+cloudflared tunnel --url http://localhost:8000   # or: ngrok http 8000
 ```
 
-### Fork setup, learned the hard way
+---
 
-Two GitHub defaults will stop this dead, and neither produces an obvious error:
+## How it works
 
-- **Issues are disabled on forks by default.** Issue creation returns
-  `410 Gone`. Enable under *Settings → General → Features → Issues*. The
-  client raises `IssuesDisabled` with that instruction rather than surfacing a
-  raw HTTP error.
-- **Fine-grained PATs need explicit per-permission grants**: *Issues: RW*,
-  *Pull requests: RW*, *Contents: RW* (for pushing branches), and
-  *Administration: RW* only if you want the tool to toggle repo settings.
-  A token with repo *read* still reports `admin: true` in the repo payload —
-  that reflects your account, not the token — so test a write before trusting it.
+```
+  triggers        scheduled sweep (autonomous)  ·  issues.labeled (human)
+       │
+       ▼
+  detect()        classify open PRs by mergeable_state         deterministic
+       │            dirty → conflict    red required check → failing_ci   (no LLM)
+       ▼
+  record()        file ONE tracking issue per blocked PR        audit trail
+       │            labelled `devin-unblock`                    + spend gate
+       ▼
+  dispatch()      one Devin session per PR, ACU-capped          the agent
+       │            prompt: rebase / resolve / fix CI / push
+       ▼
+  reconcile()     poll to terminal state, VERIFY against GitHub
+       │            comment the verdict back on the issue
+       ▼
+  dashboard       success rate · time-to-unblock · full event log
+```
 
-### `mergeable_state` and CI
+| File | Role |
+|---|---|
+| `app/config.py` | Config + the upstream-repo guardrail |
+| `app/github_client.py` | GitHub REST + fixture-backed mock |
+| `app/devin_client.py` | Devin v3 API + deterministic mock |
+| `app/prompts.py` | Session prompts (treated as code, not string literals) |
+| `app/orchestrator.py` | detect → classify → record → dispatch → reconcile |
+| `app/main.py` | FastAPI: webhook, sweep loop, `/metrics`, `/simulate` |
+| `app/dashboard.py` | Operator dashboard |
+| `app/store.py` | SQLite state machine + metrics |
 
-`unstable` means "mergeable, but a required check is failing", so **a fork with
-no CI configured will never produce an `unstable` PR** — only `dirty`. That is
-fine for the conflict path, which is the dominant blocker in the oldest cohort
-(10 `dirty` vs 9 `unstable`) and the harder problem. To exercise the CI path,
-add any workflow that runs on `pull_request`.
+### The five decisions behind it
+
+1. **Control plane vs. agent plane.** The loop is a deterministic state machine in
+   plain code; the agent is confined to the one stage that needs judgement. A failed,
+   stuck, or lying session becomes a failed work item, never a wedged system.
+2. **Level-triggered, not event-dependent.** Discovery is sweep-only: each cycle
+   re-derives the blocked set from repo state, so there are no events to drop. The
+   single webhook is the label — the one path where a human is waiting.
+3. **Held to the same bar as any teammate.** Hard ACU budget per session; work we
+   cannot *prove* is mechanical is never assigned; results count only after GitHub
+   confirms them.
+4. **Never interrupt a human.** A PR pushed to within `MIN_QUIET_DAYS` is work in
+   progress, not rot. The label overrides — a human asking is consent.
+5. **Every action leaves a durable record.** The tracking issue is the work item, the
+   spend gate, and the audit trail. Our database is *not* the source of truth: before
+   filing, `record()` asks GitHub whether an issue already exists and adopts it, so a
+   lost volume or a second instance cannot double-file.
 
 ---
 
 ## Guardrails
 
-Spending money and pushing commits on someone's behalf deserves more than a
-sensible default.
-
 - **Upstream is blocked at the lowest level.** `apache/superset` is on a hard
-  blocklist; a webhook naming it gets `403` with an explicit refusal, even if
-  `GITHUB_REPO` were misconfigured. Both checks must pass — matching the
-  configured repo *and* not being on the blocklist.
-- **Dispatch is idempotent.** Re-detection and re-labelling never open a second
-  session for the same PR. Detection runs on every push, so without this the
-  first busy day would bill the same work repeatedly.
-- **Per-event dispatch cap** (`MAX_DISPATCHES_PER_EVENT`, default 3). The first
-  run against a 376-PR backlog would otherwise open hundreds of sessions. The
-  surplus is queued and logged, never silently dropped.
-- **Per-session ACU ceiling** (`DEVIN_MAX_ACU`).
-- **Devin pushes to the PR branch only.** Never to `master`; never merges,
-  approves, or closes.
-- **Drafts are skipped** — the author is still working.
-- **Checks already red on `master` are not chased** (`SKIP_WHEN_MASTER_RED`). If the
-  base branch fails a check, no work on a PR branch turns it green. The opposite
-  case — a check red on many PRs while `master` is green — means a rule moved and
-  each PR must adapt; that IS the work, and the fix repeats across them, so those
-  are dispatched normally.
-- **Quiet-period gate** (`MIN_QUIET_DAYS`, default 3): a PR with recent pushes
-  or comments is someone's work in progress, not rot — force-pushing onto it
-  would collide with the author's local branch. The system waits until the PR
-  has been quiet, and detection doesn't even file an issue for active PRs. The
-  manual `devin-unblock` label overrides the gate: a human explicitly asking
-  is consent.
-  The gate measures **when the author last pushed**, not `updated_at` — that
-  field bumps on any activity including bot comments, and on this repo bot
-  reviews slightly outnumber human ones, so gating on it would hold the gate
-  closed on PRs nobody has touched in months. A push is what collides with an
-  author's local work; a comment is not.
-- **The dispatch queue drains.** `MAX_DISPATCHES_PER_EVENT` caps sessions per
-  sweep/webhook (a spend-rate limit, not a throughput ceiling); items past the
-  cap are picked up by later sweeps, oldest PR first.
+  blocklist; a webhook naming it gets `403`, even if `GITHUB_REPO` were misconfigured.
+- **Dispatch is idempotent**, in the store *and* against GitHub.
+- **Per-event dispatch cap** and **per-session ACU ceiling**.
+- **Devin pushes to the PR branch only** — never `master`, never merges or approves.
+  Worst case is one bad branch, recoverable from git history, still behind human review.
+- **Drafts are skipped**, and so are checks already red on `master` — no work on a PR
+  branch turns those green.
 
 ---
 
@@ -224,71 +204,54 @@ sensible default.
 
 *"If I were an engineering leader, how would I know this is working?"*
 
-`GET /metrics` (JSON) and `/` (dashboard, auto-refreshing):
-
 | Metric | Question it answers |
 |---|---|
 | `succeeded` / `failed` / `success_rate` | Is the agent actually fixing things? |
-| `median_unblock_seconds` | How fast, versus the 71-day status quo? |
-| `acus_per_success` | Unit economics — cost per rescued PR |
-| `in_flight`, `by_state` | What's happening right now |
+| `queued` vs `in_flight` | Is the backlog waiting, or is work running? |
+| `median_unblock_seconds` | How fast, versus the status quo? |
+| `errored` | System faults — **excluded** from the success rate |
 | `blocker_mix` | Conflicts vs red CI — where the work really is |
 
-Success rate is measured over attempts that reached a *verdict*, so queued work
-doesn't dilute it into meaninglessness early on. Every state transition is
-timestamped in SQLite, so the event log is a genuine audit trail.
+Two definitions worth knowing:
 
-The mock deliberately escalates every 4th session. A demo where everything
-succeeds teaches an engineering audience nothing about how failures surface.
+- **"Needs a human" means the agent tried and could not.** Plumbing faults land in a
+  separate `errored` state and never touch the success rate — a dispatch that never
+  reached Devin says nothing about whether the conflict was resolvable.
+- **Success is verified, not reported.** A session claiming success is re-checked
+  against GitHub before it counts, so the rate measures results rather than the agent's
+  confidence.
 
 ---
 
-## Tests
+## Why this problem
 
-```bash
-./.venv/bin/python -m pytest -q     # 32 tests
-```
+Chosen after profiling `apache/superset`: 8,000 commits, 376 open PRs, 267 open issues.
+Full workings, with every figure's provenance, are in
+[`notes/findings.md`](notes/findings.md); the pitch is in [`deck/`](deck/).
 
-Coverage is concentrated on what would cause real damage: the upstream
-guardrail, dispatch idempotency (duplicate sessions cost money), the
-per-event cap, and outcome classification.
+| Finding | Value |
+|---|---|
+| Open PRs blocked on mechanics | **153 of 376 (40%)** — 93 conflicts, 60 red CI |
+| Deliberately untouched | 137 awaiting review · 66 drafts · 15 changes-requested |
+| Human PRs that reach a conclusion and merge | **87%** — merging is the default outcome |
+| Merge rate by time stuck | **91% → 64%** as a PR ages |
+| Time to merge: dependabot vs human | **0.21 d** vs **3.34 d** median (p90 **55 d**) |
 
-Three bugs found by running against the live APIs, each now covered by a test —
-worth reading, because all three fail *silently*:
-
-1. **`status` alone never terminates a session.** A Devin session that has
-   finished and is waiting for a reply still reports `status: "running"`; the
-   only signal is `status_detail: "waiting_for_user"`. Polling the coarse field
-   means those items poll forever and quietly inflate the in-flight count.
-   Terminal detection reads both fields.
-2. **The GitHub list-PRs endpoint omits `mergeable_state`.** It is computed
-   lazily and appears only on the single-PR endpoint, so every listed PR reads
-   as `unknown` and nothing is ever detected. `detect()` hydrates each candidate
-   individually, with bounded concurrency.
-3. **`suspended` / `blocked` sessions are terminal for an unattended pipeline.**
-   Nobody is watching to answer the agent's question, so these escalate rather
-   than wait.
-
-And one consequence worth knowing about: because the orchestrator verifies
-reported successes against the repository, the *mock* agent has to actually
-repair the *mock* PR, or verification correctly rejects every success and the
-offline demo reports 0%. `DemoWorld` is the small shared state that lets the two
-mocks agree about reality. A demo harness that cannot pass its own verification
-step is not a demo of the real system.
+Dependabot's PRs are not reviewed more leniently — they merge in five hours because
+nothing *mechanical* ever blocks them. Superset already ran that experiment 1,486
+times. This extends the same property to human-authored PRs.
 
 ---
 
 ## Known limitations
 
-- **Pushing to a contributor's fork branch** requires the maintainer-edit flag,
-  which not every contributor grants. In a real engagement the pattern is a
-  maintainer-owned branch or a stacked PR. This is a permissions question, not a
-  technical one, and worth settling early.
-- **`mergeable_state` is computed lazily** by GitHub and reports `unknown`
-  briefly after a push; the client retries, but a sweep immediately after a
-  large merge may under-report.
-- **The reconciler polls** on a fixed interval. Fine at this scale; a real
-  deployment would take Devin webhooks instead.
-- **The PR fixture is a 22-PR sample** captured from upstream, matching the real
-  distribution (10 `dirty` / 9 `unstable` / 3 `clean`). Profiling all 376
-  requires an authenticated token.
+- **Pushing to a contributor's fork branch** requires the maintainer-edit flag, which
+  not every contributor grants. Real deployments use a maintainer-owned branch or a
+  stacked PR. A permissions question, not a technical one.
+- **A rescued PR that re-rots is not re-tracked** — terminal work items don't reopen.
+  Production needs a re-rot cycle reusing the same issue.
+- **ACU consumption is not reported** by the API for these sessions, so no spend
+  metric is shown. The per-session ceiling is still enforced.
+- **`mergeable_state` is computed lazily** by GitHub and reports `unknown` briefly
+  after a push; the client retries, but a sweep immediately after a large merge may
+  under-report.
