@@ -270,7 +270,7 @@
     <p class="lede">A pull request is a race against your main branch. While it waits for
     review, main keeps moving — and past a point the PR <strong>can no longer merge</strong>:
     conflicts, broken checks. The finished work inside it starts to rot.
-    Someone has to pay: <em class="hl">rebase it, fix it, or lose it</em>.</p>
+    Someone has to pay <em class="hl">the merge tax</em>: rebase it, fix it, or lose it.</p>
     <div class="diverge" role="img" aria-label="Diagram: main branch advancing with commits while a PR branch stands still; the gap between them widens and turns red">
       <svg viewBox="0 0 800 260">
         <polygon points="70,200 740,200 740,70" fill="var(--crit)" opacity="0.09"/>
@@ -295,9 +295,9 @@
     <div class="notes"><span class="win">0:15 – 0:50 · ~55 words</span>
       What is PR rot? A pull request is a race against main. While it waits for review,
       main keeps moving — and past a point it can't merge any more. Conflicts, broken
-      checks. And every rotted PR is a double loss: engineering you already paid for,
-      and an improvement your codebase never gets. We measured exactly how big that
-      loss is.
+      checks. Someone has to pay the merge tax: rebase it, fix it, or lose it. And every
+      rotted PR is a double loss — engineering you already paid for, and an improvement
+      your codebase never gets.
     </div>
   </div>
 </section>
