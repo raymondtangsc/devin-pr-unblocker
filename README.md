@@ -117,22 +117,6 @@ than silently pretending to dispatch work.
 | `SKIP_WHEN_MASTER_RED` | `true` | Don't chase checks already failing on `master`. |
 | `GITHUB_WEBHOOK_SECRET` | — | HMAC verification; enforced when set. |
 
-### Two GitHub defaults that will stop you
-
-- **Issues are disabled on forks.** Issue creation returns `410 Gone`. Enable under
-  *Settings → General → Features → Issues*. The client raises `IssuesDisabled` with
-  that instruction rather than a raw HTTP error.
-- **Fine-grained PATs need explicit per-permission grants.** A token with repo *read*
-  still reports `admin: true` in the repo payload — that reflects your account, not the
-  token — so test a write before trusting it.
-
-To receive the label webhook, expose the service and point a GitHub webhook at
-`POST /webhook/github` for the **issues** event only:
-
-```bash
-cloudflared tunnel --url http://localhost:8000   # or: ngrok http 8000
-```
-
 ---
 
 ## How it works
