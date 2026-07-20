@@ -474,10 +474,10 @@
         event costs <em class="hl">seconds, not coverage</em> — and it runs behind a firewall
         with zero inbound surface.<span class="src">main.py · run_sweep() — reconciliation, the Kubernetes argument</span></p></div>
       <div class="counter"><span class="n">03</span>
-        <p><strong>The agent is untrusted by design.</strong> Hard ACU budget per session;
-        can't <em class="hl">prove</em> a PR is mechanically blocked → never dispatched
-        (the 137 review-bound PRs); and a reported success only counts after re-checking
-        GitHub.<span class="src">classify() → return None · _verify_unblocked() · max_acu_limit</span></p></div>
+        <p><strong>Held to the same bar as any teammate.</strong> A hard budget per session;
+        work we can't <em class="hl">prove</em> is mechanical is never assigned (the 137
+        review-bound PRs); and results count only after GitHub confirms them. Budgets,
+        scope, verification — the discipline we already apply to humans.<span class="src">max_acu_limit · classify() → return None · _verify_unblocked()</span></p></div>
       <div class="counter"><span class="n">04</span>
         <p><strong>Every action leaves a durable record.</strong> The tracking issue is the
         work item, the spend gate, and the audit trail; every state transition is
