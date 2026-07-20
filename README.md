@@ -7,6 +7,9 @@ judgement instead of rebases.
 It never merges, approves, or closes anything. It moves a PR from *"blocked on
 mechanical work"* to *"needs a human decision."*
 
+Why this problem, and every figure behind it: [`notes/findings.md`](notes/findings.md).
+The pitch: `open deck/merge-tax.html` (see [`deck/README.md`](deck/README.md)).
+
 ---
 
 ## Run it
@@ -204,34 +207,6 @@ Two definitions worth knowing:
 - **Success is verified, not reported.** A session claiming success is re-checked
   against GitHub before it counts, so the rate measures results rather than the agent's
   confidence.
-
----
-
-## Why this problem
-
-Chosen after profiling `apache/superset`: 8,000 commits, 376 open PRs, 267 open issues.
-Full workings, with every figure's provenance, are in
-[`notes/findings.md`](notes/findings.md).
-
-The pitch is a self-contained HTML deck — no build, no server:
-
-```bash
-open deck/merge-tax.html     # N = speaker notes, T = pin light/dark
-```
-
-See [`deck/README.md`](deck/README.md) for the beat structure and presenting notes.
-
-| Finding | Value |
-|---|---|
-| Open PRs blocked on mechanics | **153 of 376 (40%)** — 93 conflicts, 60 red CI |
-| Deliberately untouched | 137 awaiting review · 66 drafts · 15 changes-requested |
-| Human PRs that reach a conclusion and merge | **87%** — merging is the default outcome |
-| Merge rate by time stuck | **91% → 64%** as a PR ages |
-| Time to merge: dependabot vs human | **0.21 d** vs **3.34 d** median (p90 **55 d**) |
-
-Dependabot's PRs are not reviewed more leniently — they merge in five hours because
-nothing *mechanical* ever blocks them. Superset already ran that experiment 1,486
-times. This extends the same property to human-authored PRs.
 
 ---
 
