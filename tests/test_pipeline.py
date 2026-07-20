@@ -786,3 +786,25 @@ def test_unreadable_master_status_does_not_block_dispatch() -> None:
     orch = Orchestrator(make_cfg(min_quiet_days=0), Store(":memory:"), gh, MockDevinClient())
     found = {pr.number for pr, _ in asyncio.run(orch.detect(FORK))}
     assert set(nums) <= found, "unprovable master state must not suppress dispatch"
+
+
+def test_existing_github_issue_is_adopted_not_duplicated() -> None:
+    """Idempotency must survive losing our database.
+
+    A fresh store with a repo that already has tracking issues must adopt them,
+    not file a second set — otherwise a lost volume spams every PR again.
+    """
+    gh = MockGitHubClient()
+    pr = asyncio.run(gh.get_pr(FORK, 28627))
+
+    first = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    asyncio.run(first.record(FORK, pr, "conflict"))
+    assert len(gh.issues) == 1
+
+    # simulate the DB being lost: brand-new store, same repo
+    second = Orchestrator(make_cfg(), Store(":memory:"), gh, MockDevinClient())
+    item = asyncio.run(second.record(FORK, pr, "conflict"))
+
+    assert len(gh.issues) == 1, "must not file a second issue for the same PR"
+    assert item is not None and item.issue_number == gh.issues[0]["number"]
+    assert "issue_adopted" in [e["kind"] for e in second.store.recent_events(10)]

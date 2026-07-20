@@ -246,7 +246,28 @@ class Orchestrator:
             state=st.DETECTED,
         )
         if not self.store.upsert_detected(item):
-            return None  # already tracked; do not file a duplicate issue
+            return None  # already tracked in this store
+
+        # Second, durable guard: our database is not the only source of truth.
+        # If the volume was lost, or another instance watches the same repo, the
+        # store looks empty while GitHub already holds the tracking issue.
+        try:
+            existing = await self.github.find_tracking_issue(
+                repo, pr.number, self.cfg.trigger_label
+            )
+        except Exception as exc:
+            log.warning("could not check for an existing issue on #%s: %s", pr.number, exc)
+            existing = None
+        if existing is not None:
+            self.store.set_issue(pr.number, existing)
+            self.store.log(
+                "issue_adopted",
+                f"adopted existing issue #{existing} for PR #{pr.number} "
+                "(already filed; not duplicating)",
+                pr_number=pr.number,
+                issue=existing,
+            )
+            return self.store.get(pr.number)
 
         issue_number = await self.github.create_issue(
             repo,

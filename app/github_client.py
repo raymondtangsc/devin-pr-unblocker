@@ -118,6 +118,9 @@ class GitHubClient(Protocol):
     async def failing_checks(self, repo: str, sha: str) -> list[str]: ...
     async def head_committed_at(self, repo: str, sha: str) -> str: ...
     async def branch_head_sha(self, repo: str, branch: str) -> str: ...
+    async def find_tracking_issue(
+        self, repo: str, pr_number: int, label: str
+    ) -> int | None: ...
     @property
     def mode(self) -> str: ...
 
@@ -210,6 +213,31 @@ class LiveGitHubClient:
                 json={"body": body},
             )
             r.raise_for_status()
+
+    async def find_tracking_issue(
+        self, repo: str, pr_number: int, label: str
+    ) -> int | None:
+        """An existing tracking issue for this PR, if one was already filed.
+
+        Idempotency cannot live only in our own database: lose the volume, or
+        point a second instance at the same repo, and every issue gets filed
+        again. GitHub holds the durable record, so ask it.
+        """
+        self._guard(repo)
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.get(
+                f"{API}/repos/{repo}/issues",
+                headers=self._headers,
+                params={"state": "all", "labels": label, "per_page": 100},
+            )
+            r.raise_for_status()
+            needle = f"PR #{pr_number}:"
+            for issue in r.json():
+                if "pull_request" in issue:
+                    continue
+                if needle in (issue.get("title") or ""):
+                    return int(issue["number"])
+        return None
 
     async def branch_head_sha(self, repo: str, branch: str) -> str:
         """Head commit of a branch -- used to read master's own check status."""
@@ -326,6 +354,14 @@ class MockGitHubClient:
 
     async def branch_head_sha(self, repo: str, branch: str) -> str:
         return self.master_sha
+
+    async def find_tracking_issue(
+        self, repo: str, pr_number: int, label: str
+    ) -> int | None:
+        for i in self.issues:
+            if f"PR #{pr_number}:" in i["title"]:
+                return int(i["number"])
+        return None
 
 
 def _parse_pr(d: dict[str, Any]) -> PullRequest:

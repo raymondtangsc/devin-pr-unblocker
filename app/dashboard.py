@@ -103,21 +103,36 @@ def render_dashboard(
     modes: dict[str, str],
     repo: str,
     label: str,
+    cfg_max_acu: int = 10,
 ) -> str:
     rate = metrics.get("success_rate")
     rate_txt = f"{rate * 100:.0f}%" if rate is not None else "—"
     med = metrics.get("median_unblock_seconds")
     med_txt = _duration(med) if med else "—"
 
+    # ACU *consumption* is not reported by the API for these sessions, so it is
+    # not shown -- a tile reading 0.0 looks like a broken metric and invites a
+    # question we cannot answer. The ceiling is what this system actually
+    # enforces, so that is what is surfaced.
+    acu_txt = (
+        f"{metrics['total_acus']}"
+        if metrics.get("total_acus")
+        else f"\u2264{cfg_max_acu}"
+    )
+    acu_label = (
+        "ACUs consumed"
+        if metrics.get("total_acus")
+        else "ACU ceiling per PR (consumption not reported by API)"
+    )
     tiles = [
         ("", metrics["total_tracked"], "PRs tracked"),
         ("", metrics["in_flight"], "in flight"),
-        ("ok", metrics["succeeded"], "unblocked"),
+        ("ok", metrics["succeeded"], "unblocked, verified"),
         ("crit", metrics["failed"], "need a human"),
-        ("", rate_txt, "success rate"),
+        ("", rate_txt, "verified success rate"),
         ("", med_txt, "median time to unblock"),
-        ("", metrics["total_acus"], "ACUs consumed"),
-        ("", metrics.get("acus_per_success") or "—", "ACUs per success"),
+        ("", metrics["by_state"].get("issue_filed", 0), "queued for dispatch"),
+        ("", acu_txt, acu_label),
     ]
     tiles_html = "".join(
         f'<div class="tile"><div class="n {cls}">{html.escape(str(v))}</div>'
