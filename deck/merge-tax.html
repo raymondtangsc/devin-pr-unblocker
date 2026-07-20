@@ -466,8 +466,8 @@
       <div class="counter"><span class="n">01</span>
         <p><strong>Control plane vs. agent plane.</strong> The loop — detect, classify,
         dispatch, verify — is a deterministic state machine in plain code. The agent gets
-        exactly <em class="hl">one box: the judgment step</em>. Agent failures can't corrupt
-        the loop.<span class="src">orchestrator.py — no model call anywhere in the control path</span></p></div>
+        exactly <em class="hl">one box: the judgment step</em>. A failed, stuck, or lying
+        session becomes a failed work item — never a wedged system.<span class="src">orchestrator.py — no model call anywhere in the control path</span></p></div>
       <div class="counter"><span class="n">02</span>
         <p><strong>Level-triggered, not event-dependent.</strong> A scheduled sweep re-derives
         the blocked set from repo state every cycle; webhooks only buy latency. A dropped
@@ -485,7 +485,8 @@
         bolt-on.<span class="src">store.py — state machine + event log behind the metrics</span></p></div>
     </div>
     <div class="guardline">also load-bearing: upstream repo hard-blocklisted · idempotent dispatch ·
-      per-event dispatch cap · per-session ACU ceiling · pushes to the PR branch only</div>
+      per-event dispatch cap · per-session ACU ceiling · pushes to the PR branch only —
+      worst case is one bad branch, recoverable from git history, still behind human review</div>
     <div class="notes"><span class="win">3:10 – 3:45 · ~60 words</span>
       Three decisions worth defending. Detection has no model in it — an API sweep; agent
       spend starts where judgment starts. The classifier refuses by default: if we can't
