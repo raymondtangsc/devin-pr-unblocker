@@ -78,7 +78,12 @@ td.mono{font-family:var(--mono);font-size:.78rem}
 .pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
 .pill.info{background:color-mix(in srgb,var(--info) 15%,transparent);color:var(--info)}
 .pill.neutral{background:var(--sunk);color:var(--ink-3)}
-.detail{color:var(--ink-2);font-size:.8rem;max-width:34rem}
+.detail{color:var(--ink-2);font-size:.8rem;max-width:30rem}
+.muted{color:var(--ink-3);font-size:.76rem}
+a.sess{color:var(--accent-ink);text-decoration:none;font-size:.78rem;
+       border-bottom:1px solid color-mix(in srgb,var(--accent) 45%,transparent)}
+a.sess:hover,a.sess:focus-visible{border-bottom-color:var(--accent)}
+a:focus-visible,tr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .log{font-family:var(--mono);font-size:.75rem;background:var(--card);
      border:1px solid var(--rule);border-radius:6px;overflow-x:auto}
 .log div{padding:.32rem .8rem;border-bottom:1px solid var(--rule);white-space:nowrap}
@@ -123,9 +128,9 @@ def render_dashboard(
     if items:
         rows = "".join(_row(i) for i in items)
         table = f"""<div class="tbl"><table>
-<thead><tr><th>PR</th><th>Title</th><th>Author</th><th>Blocker</th>
-<th style="text-align:right">Age</th><th>State</th><th>Outcome</th>
-<th style="text-align:right">ACU</th></tr></thead>
+<thead><tr><th>PR</th><th>Title</th><th>Blocker</th>
+<th style="text-align:right">Age</th><th>State</th><th>Devin session</th>
+<th>Outcome</th><th style="text-align:right">ACU</th></tr></thead>
 <tbody>{rows}</tbody></table></div>"""
     else:
         table = (
@@ -174,18 +179,27 @@ def render_dashboard(
 def _row(i: WorkItem) -> str:
     cls, label = _STATE_STYLE.get(i.state, ("neutral", i.state))
     detail = html.escape((i.detail or "")[:180])
-    session = (
-        f'<a href="{html.escape(i.session_url)}">{html.escape(i.session_id or "")}</a>'
-        if i.session_url
-        else ""
-    )
+    # The session link is the thing an engineer actually wants to click, so it
+    # gets its own column. "queued" states why a row has none, rather than
+    # leaving a blank cell that reads as a bug.
+    if i.session_url:
+        short = html.escape((i.session_id or "")[:12])
+        session = (
+            f'<a class="sess" href="{html.escape(i.session_url)}" '
+            f'target="_blank" rel="noopener">{short}… &#8599;</a>'
+        )
+    elif i.state in ("detected", "issue_filed"):
+        session = '<span class="muted">queued</span>'
+    else:
+        session = '<span class="muted">&mdash;</span>'
+
     return f"""<tr>
 <td class="mono">#{i.pr_number}</td>
-<td class="detail">{html.escape(i.title[:74])}</td>
-<td class="mono">{html.escape(i.author)}</td>
+<td class="detail">{html.escape(i.title[:64])}<br><span class="muted">@{html.escape(i.author)}</span></td>
 <td class="mono">{html.escape(i.blocker)}</td>
 <td class="num">{i.pr_age_days:.0f}d</td>
-<td><span class="pill {cls}">{html.escape(label)}</span><br><span class="sub">{session}</span></td>
+<td><span class="pill {cls}">{html.escape(label)}</span></td>
+<td class="mono">{session}</td>
 <td class="detail">{detail}</td>
 <td class="num">{i.acus_consumed or ""}</td>
 </tr>"""
